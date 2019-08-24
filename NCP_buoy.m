@@ -16,12 +16,15 @@ clearvars -except NCP* DIC* O2* errors planes_loop options
 close all
 clc
 
+options.directory = '/Users/Michael/Documents/Work/UEA/NCP_scripts'
+options.plot_dir = '/Users/Michael/Documents/Work/UEA/NCP_scripts/Plots/'
 addpath(genpath(options.directory));
 load([options.directory,'/data/prcdata.mat'],'prcdata');
 load([options.directory,'/data/METEO.mat']);  
 load([options.directory,'/data/BOUSSOLE.mat']);  
 load([options.directory,'/data/closeness.mat']);  
 load([options.directory,'/data/CTD.mat']);  
+load([options.directory,'/data/NCP.mat']);  
 
 %% Get variables for BOUSSOLE using 3 hr bins
 
@@ -29,13 +32,17 @@ BUOY.t = BOUSSOLE.time_CSYS;
 BUOY.S = BOUSSOLE.sal_CSYS;
 BUOY.ALK = BOUSSOLE.ALK_CSYS;
 BUOY.T = BOUSSOLE.temp_CSYS;
-BUOY.DIC = BOUSSOLE.DIC_CSYS;
+BUOY.DIC = BOUSSOLE.DIC_CSYS_mmolm3;
 BUOY.fCO2 = BOUSSOLE.fCO2_CSYS;
 BUOY.O2 = BOUSSOLE.O2_raw_10m_Liliane;
+check = isfinite(BOUSSOLE.time_CSYS) & isfinite(BOUSSOLE.rho_CSYS);
+BUOY.dens = interp1(BOUSSOLE.time_CSYS(check),BOUSSOLE.rho_CSYS(check),BOUSSOLE.O2_raw_10m_Liliane_date,'Linear');
+BUOY.O2 = (BUOY.dens/1000)' .* BUOY.O2;
+
 BUOY.O2_date = BOUSSOLE.O2_raw_10m_Liliane_date;
 BUOY.dv_O2 = datevec(BOUSSOLE.O2_raw_10m_Liliane_date);
 BUOY.O2_hr = BUOY.dv_O2(:,4);
-BUOY.DICnormS = BOUSSOLE.DIC_CSYS_Snorm;
+BUOY.DICnormS = BOUSSOLE.DIC_CSYS_Snorm_mmolm3;
 BUOY.hr = datestr(BUOY.t(1:1080));
 BUOY.hr = BUOY.hr(:,13:14);
 BUOY.hr = str2num(BUOY.hr)';
