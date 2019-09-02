@@ -129,5 +129,15 @@ NCP_est_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.en
 % get errors
 run NCP_error.m 
 
-% save NCP
+%% run NCP_buoy and create table of vals
+% get buoy vals
+run NCP_buoy
+% get table vales
+run NCP_table.m
+
+
+
+
+
+%% save NCP
 save([options.directory,'/data/NCP.mat']);  
