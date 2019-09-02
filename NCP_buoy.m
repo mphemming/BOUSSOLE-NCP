@@ -50,6 +50,9 @@ BUOY.hr(1081) = NaN;
 
 MET.wind = METEO.wind_speed;
 MET.t = METEO.time_wind_speed;
+MET.press = METEO.sea_level_pressure;
+[C,ia,ic] = unique(METEO.date);
+MET.press = interp1(METEO.date(ia),METEO.sea_level_pressure(ia),MET.t);
 
 d = datenum(2016,03,10,00,00,00):datenum(00,00,00,03,00,00):datenum(2016,04,3,00,00,00)
 
@@ -59,14 +62,20 @@ for dl = 1:length(d);
     bins(dl).Bt_str = datestr(daynum);
     bins(dl).BT = nanmedian(BUOY.T(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));
     bins(dl).BS = nanmedian(BUOY.S(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));
+    bins(dl).BT_std = nanstd(BUOY.T(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));
+    bins(dl).BS_std = nanstd(BUOY.S(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));
     bins(dl).BALK = nanmedian(BUOY.ALK(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));
     bins(dl).BDIC = nanmedian(BUOY.DIC(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));       
     bins(dl).BDICnormS = nanmedian(BUOY.DICnormS(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));   
-    bins(dl).BfCO2 = nanmedian(BUOY.fCO2(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7));   
+    bins(dl).BfCO2 = nanmedian(BUOY.fCO2(BUOY.t >= daynum-((1/48)*3) & BUOY.t <= daynum+((1/48)*3) & BUOY.hr > 4 & BUOY.hr <= 7)); 
+     bins(dl).press_std = nanstd(MET.press(MET.t >= daynum-((1/48)*3) & MET.t <= daynum+((1/48)*3)));
+    bins(dl).press = nanmedian(MET.press(MET.t >= daynum-((1/48)*3) & MET.t <= daynum+((1/48)*3)));
     bins(dl).wind = nanmedian(MET.wind(MET.t >= daynum-((1/48)*3) & MET.t <= daynum+((1/48)*3)));
     bins(dl).wind10 = bins(dl).wind.*((10/0.7)^0.108);
     bins(dl).O2 = nanmedian(BUOY.O2(BUOY.O2_date >= daynum-((1/48)*3) & BUOY.O2_date <= daynum+((1/48)*3) & BUOY.O2_hr > 4 & BUOY.O2_hr <= 7));
+    bins(dl).dens = nanmedian(BUOY.dens(BUOY.O2_date >= daynum-((1/48)*3) & BUOY.O2_date <= daynum+((1/48)*3) & BUOY.O2_hr > 4 & BUOY.O2_hr <= 7));
 end
+
 
 clear d dl daynum BUOY MET 
 save([options.directory,'/data/3hrbins'],'bins')
@@ -77,6 +86,7 @@ t = [bins.Bt];
 T = [bins.BT];
 S = [bins.BS];
 wind10 = [bins.wind10];
+atmpress = [bins.press];
 fCO2 = [bins.BfCO2];
 DIC = [bins.BDICnormS];
 
@@ -125,6 +135,28 @@ NCP_DIC.M2901.check = check;
 %% O2 NCP
 t = [bins.Bt];
 O2 = [bins.O2];
+dens =[bins.dens];
+T = [bins.BT];
+
+% calculate O2 ASE
+
+% oxygen saturation
+% Benson and Krause (1984) - equation 24 using tables 5 and 9 and
+% atmospheric pressure (atm) from Meteo buoy
+% O2 sat taking into account pressure
+O2_saturation = o2satSTP([bins.BT], [bins.BS], atmpress/100);
+% convert to mmol m^-3
+O2_saturation = (dens/1000) .* O2_saturation;
+% schmidt
+ScO2 = 1920.4 - (135.6 * T) + (5.2122 * T.^2) ...
+    - (0.10939 * T.^3) + (0.0009377 * T.^4); 
+% Gas diffusivity
+KO2 = 0.251 .* wind10.^2 .* ((ScO2/660).^-0.5); % gas diffusivity
+% Calculate airsea exchange
+% gas diffusivity, bubble, and schmidt also calculated in funciton 'ASEflux'
+[ASE ASE_uncertainty] = ASEflux(T, wind10, wind10.^2, ...
+    O2,ones(size(O2)),O2_saturation,atmpress,1,1);
+
 %------------------------------------------------------------------------------------------------------------------------------------
 % NCP 20 - 25th March
 check = t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00) & ~isnan(t) & ~isnan(O2);
@@ -132,9 +164,9 @@ check = t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00) & ~i
 NCP_O2.M2025.t = t(check)';
 NCP_O2.M2025.O2 =O2(check)';
 % estimate NCP and advection
-NCP_O2.M2025.ASE = [O2_ase.ASE] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
-NCP_O2.M2025.NCP = (1.029 * 46 * NCP_O2.M2025.fit.p1 + nanmean(NCP_O2.M2025.ASE(NCP_O2.M2025.ASE ~= 0))); % mmol m^-3 d-1
-NCP_O2.M2025.ADV = [O2_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
+NCP_O2.M2025.ASE = nanmean(ASE(check));
+NCP_O2.M2025.NCP = 1.029 * 46 * NCP_O2.M2025.fit.p1 + NCP_O2.M2025.ASE; % mmol m^-3 d-1
+NCP_O2.M2025.ADV = [O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
 NCP_O2.M2025.NCP_ADV = NCP_O2.M2025.NCP + nanmean(NCP_O2.M2025.ADV(NCP_O2.M2025.ADV ~= 0)); % mmol m^-3 d-1
 NCP_O2.M2025.check = check;    
 %------------------------------------------------------------------------------------------------------------------------------------
@@ -144,9 +176,9 @@ check = t > datenum(2016,03,29,00,00,00) & t < datenum(2016,04,02,00,00,00) & ~i
 NCP_O2.M2901.t = t(check)';
 NCP_O2.M2901.O2 =O2(check)';
 % estimate NCP and advection
-NCP_O2.M2901.ASE = [O2_ase.ASE] .* ([planes_loop.date_num] >= datenum(2016,03,29) & [planes_loop.date_num] <= datenum(2016,04,02));
-NCP_O2.M2901.NCP = (1.029 * 46 * NCP_O2.M2901.fit.p1 + nanmean(NCP_O2.M2901.ASE(NCP_O2.M2901.ASE ~= 0))); % mmol m^-3 d-1
-NCP_O2.M2901.ADV = [O2_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,29) & [planes_loop.date_num] <= datenum(2016,04,02));
+NCP_O2.M2901.ASE = nanmean(ASE(check));
+NCP_O2.M2901.NCP = 1.029 * 46 * NCP_O2.M2901.fit.p1 + NCP_O2.M2901.ASE; % mmol m^-3 d-1
+NCP_O2.M2901.ADV = [O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02));
 NCP_O2.M2901.NCP_ADV = NCP_O2.M2901.NCP + nanmean(NCP_O2.M2901.ADV(NCP_O2.M2901.ADV ~= 0)); % mmol m^-3 d-1
 NCP_O2.M2901.check = check;     
     
@@ -210,10 +242,20 @@ buoy_error_DIC.error_29_01 = sqrt (  ((buoy_error_DIC.SE_line_29_01).^2) + ((buo
 
 buoy_error_O2.SE_line_20_25 = NCP_O2.M2025.gof.rmse;
 buoy_error_O2.SE_line_29_01 = NCP_O2.M2901.gof.rmse;
-buoy_error_O2.ase_20_25 = nanmean(...
-    errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)));
-buoy_error_O2.ase_29_01 = nanmean(...
-    errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)));
+% ASE errors
+buoy_error_O2.o2sat = o2satSTP([bins.BT], [bins.BS], atmpress/100) - ...
+    o2satSTP([bins.BT]+[bins.BT_std], [bins.BS]+[bins.BS_std], (atmpress+[bins.press_std])/100);
+buoy_error_O2.o2sat = (dens/1000) .* buoy_error_O2.o2sat; 
+buoy_error_O2.KO2 = ASE_uncertainty.ASEAlkireKO2val/100*24;
+buoy_error_O2.ase_20_25= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
+buoy_error_O2.ase_20_25 = nanmean(buoy_error_O2.ase_20_25(t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00)));
+buoy_error_O2.ase_29_01= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
+buoy_error_O2.ase_29_01 = nanmean(buoy_error_O2.ase_29_01(t > datenum(2016,03,29,00,00,00) & t < datenum(2016,04,02,00,00,00)));
+
+% buoy_error_O2.ase_20_25 = nanmean(...
+%     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)));
+% buoy_error_O2.ase_29_01 = nanmean(...
+%     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)));
 EADV = [errors.ADV.errors_adv].*([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
 EADV(EADV == 0) = [];
 buoy_error_O2.adv_20_25 = nanmean(EADV);
@@ -226,7 +268,10 @@ buoy_error_O2.error_29_01_adv = sqrt ( ((buoy_error_O2.SE_line_29_01).^2) + ((bu
 buoy_error_O2.error_20_25 = sqrt ( ((buoy_error_O2.SE_line_20_25).^2) + ((buoy_error_O2.ase_20_25).^2) );
 buoy_error_O2.error_29_01 = sqrt (  ((buoy_error_O2.SE_line_29_01).^2) + ((buoy_error_O2.ase_29_01).^2) );
     
-    
+%% clear uneccessary variables
+
+clearvars -except NCP* DIC* O2* errors planes_loop options buoy_error* NCP_O2 NCP_DIC
+
     
     
     
