@@ -228,3 +228,32 @@ N_table.O2_buoy.M2901.NCP_DIC = N_table.O2_buoy.M2901.NCP/1.45;
 N_table.O2_buoy.M2901.NCP_error_DIC = N_table.O2_buoy.M2901.NCP_error/1.45;
 N_table.O2_buoy.M2901.NCP_ADV_DIC = N_table.O2_buoy.M2901.NCP_ADV/1.45;
 N_table.O2_buoy.M2901.NCP_ADV_error_DIC = N_table.O2_buoy.M2901.NCP_ADV_error/1.45;
+
+%% Get average errors for terms for uncertainty table
+% O2 glider
+inv = [errors.invO2.errors];
+ent = [errors.ent.errors_ent];
+N_table.O2glider_uncertainty.inv = nanmean(inv);
+N_table.O2glider_uncertainty.ADV = nanmean(N_table.O2_glider.ADV_error);
+N_table.O2glider_uncertainty.ASE = nanmean(N_table.O2_glider.ASE_error);
+N_table.O2glider_uncertainty.ENT = nanmean(ent);
+% DIC glider
+inv = [errors.invDIC.errors];
+ent = [errors.ent_DIC.errors_ent];
+N_table.DICglider_uncertainty.inv = nanmean(inv);
+N_table.DICglider_uncertainty.ADV = nanmean(N_table.DIC_glider.ADV_error);
+N_table.DICglider_uncertainty.ASE = nanmean(N_table.DIC_glider.ASE_error);
+N_table.DICglider_uncertainty.ENT = nanmean(ent);
+% O2 buoy
+N_table.O2buoy_uncertainty.ASE = nanmean([N_table.O2_buoy.M2901.ASE_error,N_table.O2_buoy.M2025.ASE_error]);
+N_table.O2buoy_uncertainty.NCP = nanmean([N_table.O2_buoy.M2901.NCP_ADV_error,N_table.O2_buoy.M2025.NCP_ADV_error]);
+N_table.O2buoy_uncertainty.NCP_no_ADV = nanmean([N_table.O2_buoy.M2901.NCP_error,N_table.O2_buoy.M2025.NCP_error]);
+% DIC buoy
+N_table.DICbuoy_uncertainty.ASE = nanmean([N_table.DIC_buoy.M2901.ASE_error,N_table.DIC_buoy.M2025.ASE_error]);
+N_table.DICbuoy_uncertainty.NCP_no_ADV = nanmean([N_table.DIC_buoy.M2901.NCP_error,N_table.DIC_buoy.M2025.NCP_error]);
+
+
+
+
+
+
