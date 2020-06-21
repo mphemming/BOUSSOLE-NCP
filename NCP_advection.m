@@ -6,7 +6,7 @@
 % Script to calculate O2 Advection, following method by Alkire et al 2014
 
 % created by MPH in Norwich, 14/11/2017
-% modified by MPH in Sydney, 01/07/2019
+% modified by MPH in Sydney, 21/06/2020
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -17,24 +17,24 @@ disp('O2 Advection | Calculating absolute velocities');
 
 for day = options.dayrange-8
     % Use only dives that go as far down as 1000m (ish)
-     O2_adv(day).time_selection =  vars.DACs.t > planes_loop(day+8).date_num - options.window ...
-         &  vars.DACs.t < planes_loop(day+8).date_num + options.window;
+     O2_adv(day).time_selection =  vars.DACs.t > planes_loop(day+8).date_num - (options.window*options.window_adv) ...
+         &  vars.DACs.t < planes_loop(day+8).date_num + (options.window*options.window_adv);
     O2_adv(day).lat = vars.DACs.lat(O2_adv(day).time_selection);
     O2_adv(day).f = gsw_f(nanmedian(O2_adv(day).lat)); % coriolis parameter
     O2_adv(day).GV_D = [planes_loop(day+8).GPA_planes.D_levels]; % obtain bin depths within time window
     % concatenate GPA gradient profiles within time window
-    O2_adv(day).D_U = [planes_loop(day+8).GPA_planes.gpa_xA]; % remember, 1day+-2day mean already done, so use just 'day'
-    O2_adv(day).D_V = [planes_loop(day+8).GPA_planes.gpa_yA]; % remember, 1day+-2day mean already done, so use just 'day'
+    O2_adv(day).D_U = [planes_loop(day+8).GPA_planes.gpa_xA]; % remember, 1day+-nday mean already done, so use just 'day'
+    O2_adv(day).D_V = [planes_loop(day+8).GPA_planes.gpa_yA]; % remember, 1day+-nday mean already done, so use just 'day'
     % Calculate velocity relative to the sea-surface:
     % 1000 is conversion between km and m, don't multiply by distance because gradients are per km
-    O2_adv(day).DU = -O2_adv(day).D_V / (1000*O2_adv(day).f); % average over 3 day window, 
-    O2_adv(day).DV = O2_adv(day).D_U / (1000*O2_adv(day).f); % average over 3 day window
+    O2_adv(day).DU = -O2_adv(day).D_V / (1000*O2_adv(day).f); % average over n day window, 
+    O2_adv(day).DV = O2_adv(day).D_U / (1000*O2_adv(day).f); % average over n day window
     % Remove the mean from the rel. velocity to obtain mean anomalies    
     O2_adv(day).DU_anom = O2_adv(day).DU - mean(O2_adv(day).DU);
     O2_adv(day).DV_anom = O2_adv(day).DV - mean(O2_adv(day).DV);
     % Add rel. vel. to time interval mean DAC to obtain approximation of sea-surface velocity:    
-    O2_adv(day).DU_abs = O2_adv(day).DU_anom + means_struct(day).DACu_h; % using 4-day averaged DAC
-    O2_adv(day).DV_abs = O2_adv(day).DV_anom + means_struct(day).DACv_h; % using 4-day averaged DAC
+    O2_adv(day).DU_abs = O2_adv(day).DU_anom + means_struct(day).DACu_h; % using n-day averaged DAC
+    O2_adv(day).DV_abs = O2_adv(day).DV_anom + means_struct(day).DACv_h; % using n-day averaged DAC
     % calc mean for h 
     O2_adv(day).DU_abs_h = nanmean(O2_adv(day).DU_abs(O2_adv(day).GV_D <= options.h));
     O2_adv(day).DV_abs_h = nanmean(O2_adv(day).DV_abs(O2_adv(day).GV_D <= options.h));
