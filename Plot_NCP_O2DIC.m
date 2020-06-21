@@ -146,7 +146,7 @@ l = legend('^{\partial I}/_{\partial t}','\itF_{\rmADV}','\itF_{\rmASE}','\itF_{
 leg_pos = get(l,'Position');
 set(l,'FontSize',18,'Box','Off','Position',leg_pos);
 
- print(gcf, '-dpng','-r400', [options.plot_dir,'NCP_O2DIC'])
+%  print(gcf, '-dpng','-r400', [options.plot_dir,'NCP_O2DIC'])
  
  
 a2 = axes;
