@@ -66,20 +66,31 @@ for day = options.dayrange
     planes_loop(day).day_selection_h = vars.t > (planes_loop(day).date_num-options.window) & ...
         vars.t < (planes_loop(day).date_num+options.window) & ...
         vars.P <= options.h;  % only top h metres for most variables
+    planes_loop(day).day_selection_h_adv = vars.t > (planes_loop(day).date_num-(options.window*options.window_adv)) & ...
+        vars.t < (planes_loop(day).date_num+(options.window*options.window_adv)) & ...
+        vars.P <= options.h;  % only top h metres for most variables    
     planes_loop(day).day_selection_GPA = ...
-        GPA_t > (planes_loop(day).date_num-options.window) ...
-        & GPA_t < (planes_loop(day).date_num+options.window); % for binned GPA profiles
+        GPA_t > (planes_loop(day).date_num-(options.window*options.window_adv)) ...
+        & GPA_t < (planes_loop(day).date_num+(options.window*options.window_adv)); % for binned GPA profiles
     planes_loop(day).day_selection_DAC = ...
-        vars.DACs.t > (planes_loop(day).date_num-options.window) & ...
-        vars.DACs.t < (planes_loop(day).date_num+options.window); % for DACs
+        vars.DACs.t > (planes_loop(day).date_num-(options.window*options.window_adv)) & ...
+        vars.DACs.t < (planes_loop(day).date_num+(options.window*options.window_adv)); % for DACs
     % Select data for oxygen O2 Plane-fits with NaNs removed
     check_nan = isfinite(vars.O2) & isfinite(vars.xa) & isfinite(vars.ya);
+    planes_loop(day).oxygen_planes.dive = vars.dive(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.Chl = vars.Chl(planes_loop(day).day_selection_h & check_nan);
     planes_loop(day).oxygen_planes.O2 = vars.O2(planes_loop(day).day_selection_h & check_nan);
-    planes_loop(day).oxygen_planes.xa = vars.xa(planes_loop(day).day_selection_h & check_nan);
-    planes_loop(day).oxygen_planes.ya = vars.ya(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.O2_adv = vars.O2_adv(planes_loop(day).day_selection_h_adv & check_nan);
+    planes_loop(day).oxygen_planes.time = vars.t(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.time_adv = vars.t(planes_loop(day).day_selection_h_adv & check_nan);
+    planes_loop(day).oxygen_planes.xa = vars.xa(planes_loop(day).day_selection_h_adv & check_nan);
+    planes_loop(day).oxygen_planes.ya = vars.ya(planes_loop(day).day_selection_h_adv & check_nan);
     planes_loop(day).oxygen_planes.P = vars.P(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.P_adv = vars.P(planes_loop(day).day_selection_h_adv & check_nan);
     planes_loop(day).oxygen_planes.lon = vars.lon(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.lon_adv = vars.lon(planes_loop(day).day_selection_h_adv & check_nan);
     planes_loop(day).oxygen_planes.lat = vars.lat(planes_loop(day).day_selection_h & check_nan);
+    planes_loop(day).oxygen_planes.lat_adv = vars.lat(planes_loop(day).day_selection_h_adv & check_nan);
     % Select data for geopotential anomaly O2 Plane-fits with NaNs removed
     check_nan = isfinite(GPA) & isfinite(xa_bin) & isfinite(ya_bin);
     planes_loop(day).GPA_planes.GPA = GPA(planes_loop(day).day_selection_GPA & check_nan);  
@@ -94,11 +105,15 @@ for day = options.dayrange
     
     %% Oxygen
     
-    planes_loop(day).oxygen_planes.const = ones(size(planes_loop(day).oxygen_planes.O2));
-    planes_loop(day).oxygen_planes.plane_matrix = [planes_loop(day).oxygen_planes.xa', planes_loop(day).oxygen_planes.ya', planes_loop(day).oxygen_planes.const'];
-    planes_loop(day).oxygen_planes.coefficients_from_matrix = planes_loop(day).oxygen_planes.plane_matrix\planes_loop(day).oxygen_planes.O2';
+    %check for NaNs
+    check = isfinite(planes_loop(day).oxygen_planes.O2_adv);
+    % prepare for fit
+    planes_loop(day).oxygen_planes.const = ones(size(planes_loop(day).oxygen_planes.O2_adv(check)));
+    planes_loop(day).oxygen_planes.plane_matrix = [planes_loop(day).oxygen_planes.xa(check)', planes_loop(day).oxygen_planes.ya(check)', planes_loop(day).oxygen_planes.const'];
+    planes_loop(day).oxygen_planes.coefficients_from_matrix = planes_loop(day).oxygen_planes.plane_matrix\planes_loop(day).oxygen_planes.O2_adv(check)';
     % fit function below gets same result as line above. 
-    [planes_loop(day).oxygen_planes.O2fit, planes_loop(day).oxygen_planes.gof,~]  = fit(planes_loop(day).oxygen_planes.plane_matrix(:,1:2),planes_loop(day).oxygen_planes.O2','poly11');
+    planes_loop(day).oxygen_planes.O2_for_fit = planes_loop(day).oxygen_planes.O2_adv(check)';
+    [planes_loop(day).oxygen_planes.O2fit, planes_loop(day).oxygen_planes.gof,~]  = fit(planes_loop(day).oxygen_planes.plane_matrix(:,1:2),planes_loop(day).oxygen_planes.O2_adv(check)','poly11');
     % get important variables
     planes_loop(day).oxygen_planes.day = day;
     planes_loop(day).oxygen_planes.datestr = datestr(planes_loop(day).date_num); 
@@ -112,7 +127,7 @@ for day = options.dayrange
     planes_loop(day).oxygen_planes.m_0  = planes_loop(day).oxygen_planes.O2fit.p00;
     planes_loop(day).oxygen_planes.O2_predictions = (planes_loop(day).oxygen_planes.xa*planes_loop(day).oxygen_planes.m_lon) + ...
         (planes_loop(day).oxygen_planes.ya*planes_loop(day).oxygen_planes.m_lat) + planes_loop(day).oxygen_planes.m_0;
-    planes_loop(day).oxygen_planes.O2_resid = planes_loop(day).oxygen_planes.O2 - planes_loop(day).oxygen_planes.O2_predictions;
+    planes_loop(day).oxygen_planes.O2_resid = planes_loop(day).oxygen_planes.O2_adv - planes_loop(day).oxygen_planes.O2_predictions;
     planes_loop(day).oxygen_planes.O2_SSR = sum(planes_loop(day).oxygen_planes.O2_resid.^2);
     planes_loop(day).oxygen_planes.O2_SSE =  planes_loop(day).oxygen_planes.O2_predictions - mean(planes_loop(day).oxygen_planes.O2); 
     planes_loop(day).oxygen_planes.O2_SSE =  planes_loop(day).oxygen_planes.O2_SSE.^2; 
@@ -122,16 +137,16 @@ for day = options.dayrange
     planes_loop(day).oxygen_planes.O2_RMSE = planes_loop(day).oxygen_planes.gof.rmse;
     % get standard errors (may be incorrect)
     planes_loop(day).oxygen_planes.m_lon_standarderror = sqrt( nansum( ...
-        (planes_loop(day).oxygen_planes.O2' - (planes_loop(day).oxygen_planes.m_0 + ...
+        (planes_loop(day).oxygen_planes.O2_adv(check)' - (planes_loop(day).oxygen_planes.m_0 + ...
         planes_loop(day).oxygen_planes.m_lon.*planes_loop(day).oxygen_planes.plane_matrix(:,1) )).^2) ) ...
-        ./ length(planes_loop(day).oxygen_planes.O2);    
+        ./ length(planes_loop(day).oxygen_planes.O2_adv(check));    
     planes_loop(day).oxygen_planes.m_lat_standarderror = sqrt( nansum( ...
-        (planes_loop(day).oxygen_planes.O2' - (planes_loop(day).oxygen_planes.m_0 + ...
+        (planes_loop(day).oxygen_planes.O2_adv(check)' - (planes_loop(day).oxygen_planes.m_0 + ...
         planes_loop(day).oxygen_planes.m_lat.*planes_loop(day).oxygen_planes.plane_matrix(:,2) )).^2) ) ...
-        ./ length(planes_loop(day).oxygen_planes.O2) ;    
+        ./ length(planes_loop(day).oxygen_planes.O2_adv(check)) ;    
     planes_loop(day).oxygen_planes.plane_standarderror = sqrt( nansum( ...
-        (planes_loop(day).oxygen_planes.O2' - planes_loop(day).oxygen_planes.O2fit(planes_loop(day).oxygen_planes.plane_matrix(:,1:2))).^2 ) ...
-        ./ length(planes_loop(day).oxygen_planes.O2) ) ; 
+        (planes_loop(day).oxygen_planes.O2_adv(check)' - planes_loop(day).oxygen_planes.O2fit(planes_loop(day).oxygen_planes.plane_matrix(:,1:2))).^2 ) ...
+        ./ length(planes_loop(day).oxygen_planes.O2_adv(check)) ) ; 
     
     %% Geopotential anomalies
      ii = 1;   
@@ -190,13 +205,13 @@ for day = options.dayrange
     
     %% Oxygen
     
-    planes_loop(day).across_O2.S = planes_loop(day).oxygen_planes.O2(...
+    planes_loop(day).across_O2.S = planes_loop(day).oxygen_planes.O2_adv(...
         planes_loop(day).oxygen_planes.lat > 43.2 & planes_loop(day).oxygen_planes.lat  <=43.3);
-    planes_loop(day).across_O2.N = planes_loop(day).oxygen_planes.O2(...
+    planes_loop(day).across_O2.N = planes_loop(day).oxygen_planes.O2_adv(...
         planes_loop(day).oxygen_planes.lat  > 43.43 & planes_loop(day).oxygen_planes.lat  < 43.5);
-    planes_loop(day).across_O2.W = planes_loop(day).oxygen_planes.O2(...
+    planes_loop(day).across_O2.W = planes_loop(day).oxygen_planes.O2_adv(...
         planes_loop(day).oxygen_planes.lon  > 7.64 & planes_loop(day).oxygen_planes.lon  < 7.725);
-    planes_loop(day).across_O2.E = planes_loop(day).oxygen_planes.O2(...
+    planes_loop(day).across_O2.E = planes_loop(day).oxygen_planes.O2_adv(...
         planes_loop(day).oxygen_planes.lon  > 7.925 & planes_loop(day).oxygen_planes.lon  < 8);
     
     planes_loop(day).across_O2.Sx = planes_loop(day).oxygen_planes.xa(...
@@ -226,7 +241,11 @@ for day = options.dayrange
          (nanmedian(planes_loop(day).across_O2.Ny) - nanmedian(planes_loop(day).across_O2.Sy));    
 
     %% get time window means
-    planes_loop(day).means.O2_h = nanmean(planes_loop(day).oxygen_planes.O2);  % mmol m^-3    
+    planes_loop(day).means.O2_h = nanmean(planes_loop(day).oxygen_planes.O2);  % mmol m^-3
+    planes_loop(day).means.compensation_h = nanmean(vars.compensation(planes_loop(day).day_selection_h));
+    planes_loop(day).means.O2_compensation_h = nanmean(vars.O2(...
+        vars.t > (planes_loop(day).date_num-options.window) & ...
+        vars.t < (planes_loop(day).date_num+options.window) & vars.P <= planes_loop(day).means.compensation_h));  % mmol m^-3   
     planes_loop(day).means.O2_std_h = nanstd(planes_loop(day).oxygen_planes.O2);  % mmol m^-3 
     planes_loop(day).means.O2_surf = nanmean(vars.O2(planes_loop(day).day_selection_h & vars.depth < 10));  % mmol m^-3    
     planes_loop(day).means.O2_surf_std = nanstd(planes_loop(day).day_selection_h & vars.depth < 10);  % mmol m^-3     
