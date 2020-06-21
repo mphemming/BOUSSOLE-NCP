@@ -6,7 +6,7 @@
 % Calculate NCP using a mass balance, including different physical terms
 %-----------------------------------------------------------------------------------------------------
 % script by MPH in Norwich, 14/11/2017
-% script modified by MPH in Sydney, 21/06/2019
+% script modified by MPH in Sydney, 21/06/2020
 %
 
 clear all
@@ -27,6 +27,8 @@ load([options.directory,'/data/METEO.mat']);
 options.h = 46; % metres
 % moving window range 
 options.window = 2; % (e.g. +- number)
+% moving window range extender for advection planes
+options.window_adv = 1; %e.g. total would be this multiplied by above
 % specify timesteps
 options.dayrange = [9:1:35]; % day range used
 options.interval = 1; % need this for some scripts, day interval
@@ -37,12 +39,14 @@ disp(['Moving window = +- ',num2str(options.window),' days'])
 %% Organise variable arrays for NCP-related calculations
 
 % Required parameters
+vars.dive = prcdata.timeseries.dive_vector;
 vars.P = prcdata.timeseries.P;
 vars.depth = prcdata.timeseries.depth;
 vars.S = prcdata.timeseries.S;
 vars.absS = prcdata.timeseries.absS;
 vars.T = prcdata.timeseries.T;
 vars.consT = prcdata.timeseries.T;
+vars.Chl = prcdata.timeseries.Chl_Fl;
 vars.t = prcdata.timeseries.t;
 vars.lon = prcdata.timeseries.lon;
 vars.lat = prcdata.timeseries.lat;
@@ -51,10 +55,52 @@ vars.MLD = prcdata.timeseries.MLDO2; % MLD from oxygen concentration
 vars.MLDO2 = prcdata.timeseries.MLDO2val; % oxygen concentration at MLD 
 vars.oxycline = prcdata.timeseries.oxyclineD; % depth of oxycline
 vars.oxyclineO2 = prcdata.timeseries.oxyclineDval; % oxygen concentration at oxycline
+%%%%%%%%%%%%%%%
 vars.O2 =  (prcdata.timeseries.sigma0/1000) .* prcdata.timeseries.O2; % calibrated O2, convert µmol kg -> mmol m-3
+% Some further QC for O2
+vars.O2(vars.depth < 5 | vars.O2 > 300) = NaN; % remove top 5m where spikes
+vars.O2_MLD = vars.O2;
+for n_dives = 1:numel(prcdata.hydrography)
+    % remove dives less than 20 m deep
+    if prcdata.hydrography(n_dives).max_pressure < 20
+        vars.O2(prcdata.timeseries.dive_vector == n_dives) = NaN; 
+        vars.O2_MLD(prcdata.timeseries.dive_vector == n_dives) = NaN;         
+    end
+    % O2 only in MLD
+    MLD = nanmean(vars.MLD(prcdata.timeseries.dive_vector == n_dives));
+    vars.O2_MLD(prcdata.timeseries.dive_vector == n_dives & vars.depth > MLD) = NaN;
+    % determine mean gradients in euphotic depth
+     check_top = vars.depth <= 10 & vars.dive == n_dives;
+     check_bot = vars.depth >= 40 & vars.depth <= 50 & vars.dive == n_dives;
+     check_up = prcdata.timeseries.downup_vector == 2;
+     grad_diff_up(n_dives) = nanmedian(vars.O2(check_top & check_up))-nanmedian(vars.O2(check_bot & check_up));
+     grad_diff_down(n_dives) = nanmedian(vars.O2(check_top & ~check_up))-nanmedian(vars.O2(check_bot & ~check_up));
+end
+vars.O2_sat = o2satSTP(vars.T, vars.S, 1013); % should use changing pressure!
+vars.O2_sat = (prcdata.timeseries.sigma0/1000) .* vars.O2_sat;
+% use O2 profiles with low gradient for advection
+for n_dives = 1:numel(prcdata.hydrography)
+    check_down =  vars.dive == n_dives & prcdata.timeseries.downup_vector == 1;
+    check_up =  vars.dive == n_dives & prcdata.timeseries.downup_vector == 2;
+    % down
+    if abs(grad_diff_down(n_dives)) < 17
+        vars.O2_adv(check_down) =  vars.O2(check_down);
+    else
+        vars.O2_adv(check_down) =  ones(size(vars.O2(check_down)))*NaN;
+    end
+    % up
+    if abs(grad_diff_down(n_dives)) < 17
+        vars.O2_adv(check_up) =  vars.O2(check_up);
+    else
+        vars.O2_adv(check_up) =  ones(size(vars.O2(check_up)))*NaN;
+    end    
+end
+vars.O2_adv = vars.O2; % this method not used
+%%%%%%%%%%%%%%%
+vars.compensation = NaN(size(vars.O2));
+vars.compensation(vars.O2-vars.O2_sat > -1 & vars.O2-vars.O2_sat < 1) = vars.depth(vars.O2-vars.O2_sat > -1 & vars.O2-vars.O2_sat < 1);
 vars.Fl = prcdata.timeseries.Chl_Fl;
 vars.Sc700 = prcdata.timeseries.Scatter_700;
-vars.dive = prcdata.timeseries.dive_vector;
 vars.DIC = ([prcdata.CO2SYS.DIC]./vars.S) * 38.3; % normalised DIC for S
 vars.DIC = (prcdata.timeseries.sigma0/1000) .* vars.DIC; % convert µmol kg -> mmol m-3
 vars.fCO213 = ([prcdata.CO2SYS.fCO2]).*exp(0.0423*(13-vars.T)); % normalised FCO2 for T
@@ -95,26 +141,26 @@ vars.GVsat_time =  [prcdata.GVsat.day];
 vars.GVsat_U =  [prcdata.GVsat.abs_U_daymean_Glider];
 vars.GVsat_V =  [prcdata.GVsat.abs_V_daymean_Glider];
 
-clear l1 ans wind_selection check_dive dive 
+clear l1 ans wind_selection check* dive 
 
 %% run individual mass balance modules / terms
 % calculate geopotential anomaly profiles
-run NCP_GPA.m;
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_GPA.m
 % obtain plane-fits of geopotential anomalies and oxygen
-run NCP_planes.m
-run NCP_planes_DIC.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes_DIC.m
 % get oxygen inventory change with time
-run NCP_inventory.m
-run NCP_inventory_DIC.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory_DIC.m
 % calculate entrainment
-run NCP_entrainment.m
-run NCP_entrainment_DIC.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment_DIC.m
 % calculate advection term
-run NCP_advection.m
-run NCP_advection_DIC.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection_DIC.m
 % calculate air-sea exchange
-run NCP_airseaexchange.m
-run NCP_airseaexchange_DIC.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange.m
+run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange_DIC.m
 % get diapycnal diffusion
 %run NCP_kz.m % exclude this, not required
 %% calculate NCP and associated errors
@@ -131,13 +177,13 @@ run NCP_error.m
 
 %% run NCP_buoy and create table of vals
 % get buoy vals
-run NCP_buoy
+%run NCP_buoy
 % get table vales
-run NCP_table.m
+%run NCP_table.m
 
 
 
 
 
 %% save NCP
-save([options.directory,'/data/NCP.mat']);  
+% save([options.directory,'/data/NCP.mat']);  
