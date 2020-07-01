@@ -28,7 +28,7 @@ options.h = 46; % metres
 % moving window range 
 options.window = 2; % (e.g. +- number)
 % moving window range extender for advection planes
-options.window_adv = 1; %e.g. total would be this multiplied by above
+options.window_adv = 2; %e.g. total would be this multiplied by options.window  above
 % specify timesteps
 options.dayrange = [9:1:35]; % day range used
 options.interval = 1; % need this for some scripts, day interval
@@ -147,8 +147,10 @@ clear l1 ans wind_selection check* dive
 % calculate geopotential anomaly profiles
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_GPA.m
 % obtain plane-fits of geopotential anomalies and oxygen
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes.m
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes_DIC.m
+run NCP_planes_depthres.m
+run NCP_planes_depthres_DIC.m
+% run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes.m
+% run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes_DIC.m
 % get oxygen inventory change with time
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory.m
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory_DIC.m
@@ -156,8 +158,9 @@ run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory_DIC.m
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment.m
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment_DIC.m
 % calculate advection term
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection.m
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection_DIC.m
+run NCP_advection_depthres.m
+% run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection.m
+run NCP_advection_depthres_DIC.m
 % calculate air-sea exchange
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange.m
 run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange_DIC.m
@@ -173,7 +176,8 @@ NCP_est_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1)
 NCP_est_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent];
 NCP_est_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
 % get errors
-run NCP_error.m 
+% run NCP_error.m 
+plot_days = options.dayrange(2:end-1);
 
 %% run NCP_buoy and create table of vals
 % get buoy vals
