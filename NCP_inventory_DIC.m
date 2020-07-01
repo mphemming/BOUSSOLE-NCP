@@ -14,6 +14,8 @@
 disp('DIC inventory change | Calculating ');
 
 %% Calculation
+means_struct = [planes_loop.means];
+
 % get inventory differentials
 DIC_inv.inv_integral = [means_struct.DIC_h].*options.h;
 DIC_inv.differentials = diff([means_struct.DIC_h].*options.h); % mean concentration x depth of layer
