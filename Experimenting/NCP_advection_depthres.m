@@ -60,12 +60,12 @@ O2_adv(day-8).V = V(1:numel(O2_adv(day-8).oxy_x)); % m s^-1
 % O2_adv(day).oxy_y_error = oxygen_planes(day).m_lat_standarderror./1000;
 % calculate O2 Advection using oxygen gradients and U and V velocities
 O2_adv(day-8).adv = ((O2_adv(day-8).oxy_x) .* O2_adv(day-8).U) + ...
-    ((O2_adv(day-8).oxy_y) .* O2_adv(day-8).V); % mmol m^-3 s^-1 d^-1
+    ((O2_adv(day-8).oxy_y) .* O2_adv(day-8).V); % mmol m^-3 s^-1 
 O2_adv(day-8).adv = O2_adv(day-8).adv; % mmol m^-2 d^-1
 % O2_adv(day-8).adv = cumtrapz(oxygen_planes.gridded_z(1:numel(O2_adv(day-8).oxy_x)), O2_adv(day-8).adv); % mmol m^-2 d^-1
 % O2_adv(day-8).adv = O2_adv(day-8).adv(end); 
 % O2_adv(day).adv = O2_adv(day).adv * 86400 * options.h;
-O2_adv(day-8).adv = nanmean(O2_adv(day-8).adv) * 86400 * options.h; 
+O2_adv(day-8).adv = nanmean(O2_adv(day-8).adv) * 86400 * options.h; % mmol m^-2 d^-1
 % O2_adv(day-8).adv = cumtrapz(O2_adv(day-8).adv);O2_inv
 % O2_adv(day-8).adv = O2_adv(day-8).adv(end)/options.h * 86400 * options.h;
 end
