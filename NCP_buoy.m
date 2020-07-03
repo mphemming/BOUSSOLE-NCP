@@ -108,9 +108,9 @@ NCP_DIC.M2025.pCO2atm = interp1(METEO.date(check_METEO),NCP_DIC.xpCO2.val_int_pC
 NCP_DIC.M2025.t = t(check)';
 NCP_DIC.M2025.DIC = DIC(check)';
 % estimate NCP and advection
-NCP_DIC.M2025.NCP = (1.029 * 30 * NCP_DIC.M2025.fit.p1 + nanmean(NCP_DIC.M2025.F)) * -1; % mmol m^-3 d-1
+NCP_DIC.M2025.NCP = (1.029 * 30 * NCP_DIC.M2025.fit.p1 + nanmean(NCP_DIC.M2025.F)) ; % mmol m^-3 d-1
 NCP_DIC.M2025.ADV = [DIC_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
-NCP_DIC.M2025.NCP_ADV = NCP_DIC.M2025.NCP + nanmean(NCP_DIC.M2025.ADV(NCP_DIC.M2025.ADV ~= 0))*-1; % mmol m^-3 d-1
+NCP_DIC.M2025.NCP_ADV = (NCP_DIC.M2025.NCP + nanmean(NCP_DIC.M2025.ADV(NCP_DIC.M2025.ADV ~= 0))); % mmol m^-3 d-1
 NCP_DIC.M2025.check = check;
 %------------------------------------------------------------------------------------------------------------------------------------
 % NCP 29/03 - 01/04
@@ -127,9 +127,9 @@ NCP_DIC.M2901.pCO2atm = interp1(tm(f1),valm(f1),t(check),'Linear');
 NCP_DIC.M2901.t = t(check)';
 NCP_DIC.M2901.DIC =DIC(check)';
 % estimate NCP and advection
-NCP_DIC.M2901.NCP = (1.029 * 22 * NCP_DIC.M2901.fit.p1 + nanmean(NCP_DIC.M2901.F)) * -1; % mmol m^-3 d-1
+NCP_DIC.M2901.NCP = (1.029 * 22 * NCP_DIC.M2901.fit.p1 + nanmean(NCP_DIC.M2901.F)) ; % mmol m^-3 d-1
 NCP_DIC.M2901.ADV = [DIC_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
-NCP_DIC.M2901.NCP_ADV = NCP_DIC.M2901.NCP + nanmean(NCP_DIC.M2901.ADV(NCP_DIC.M2901.ADV ~= 0))*-1; % mmol m^-3 d-1
+NCP_DIC.M2901.NCP_ADV = NCP_DIC.M2901.NCP + nanmean(NCP_DIC.M2901.ADV(NCP_DIC.M2901.ADV ~= 0)); % mmol m^-3 d-1
 NCP_DIC.M2901.check = check;
     
 %% O2 NCP

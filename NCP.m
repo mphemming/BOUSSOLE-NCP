@@ -24,7 +24,7 @@ load([options.directory,'/data/METEO.mat']);
 %% define options for NCP calculation
 
 % top layer of interest 
-options.h = 46; % metres
+options.h = 17; % metres
 % moving window range 
 options.window = 2; % (e.g. +- number)
 % moving window range extender for advection planes
