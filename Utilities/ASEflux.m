@@ -43,8 +43,7 @@
 % Uncertainty = Calculated uncertainty using Monte-Carlo method
 
 
-function [ASE uncertainty] = ASEflux(temp,wind10m,meanwind10msquared,O2,O2error,O2sat,Patm,method,bubble);
-
+function [ASE uncertainty KO2 Sch bub] = ASEflux(temp,wind10m,meanwind10msquared,O2,O2error,O2sat,Patm,method,bubble)
 %% bubble relationships using Fig. 5 from http://www.ldeo.columbia.edu/~spk/Papers/Nicholsonetal_InverseAirSeaFlux_11.pdf 
 
 % bubblewind = [0 2.5 5 7.1 7.5 9 11.3 11.5]; % m/s
@@ -75,6 +74,7 @@ if bubble == 0;
 end
 
 ASEAlkire = (KO2Alkire/100*24).*(O2 - (O2sat .* bub));
+bub_alkire = bub;
 % uncertainty.ASEAlkireKO2= ((KO2Alkire/100*24).*(O2 - (O2sat .* bub))) - ((KO2Alkire.*1.2/100*24).*(O2 - (O2sat .* bub)));
 uncertainty.ASEAlkireKO2 = 0.2*KO2Alkire;
 uncertainty.ASEAlkireKO2val = KO2Alkire;
@@ -224,6 +224,9 @@ ASEStanleybub = ASEStanleybub.*-1;
 
 if method == 1;
     ASE = ASEAlkire;
+    KO2 = KO2Alkire;
+    Sch = ScO2Alkire;
+    bub = bub_alkire;
 end
 if method == 2;
     ASE = ASEAWann1992;
