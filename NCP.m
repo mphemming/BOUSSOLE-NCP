@@ -15,8 +15,8 @@ clc
 
 %% Addpath and load in data
 
-options.directory = '/Users/Michael/Documents/Work/UEA/NCP_scripts'
-options.plot_dir = '/Users/Michael/Documents/Work/UEA/NCP_scripts/Plots/'
+options.directory = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts'
+options.plot_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/Plots/'
 addpath(genpath(options.directory));
 load([options.directory,'/data/prcdata.mat'],'prcdata');
 load([options.directory,'/data/METEO.mat']);  
@@ -145,25 +145,25 @@ clear l1 ans wind_selection check* dive
 
 %% run individual mass balance modules / terms
 % calculate geopotential anomaly profiles
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_GPA.m
+run NCP_GPA.m
 % obtain plane-fits of geopotential anomalies and oxygen
 run NCP_planes_depthres.m
 run NCP_planes_depthres_DIC.m
 % run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes.m
 % run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes_DIC.m
 % get oxygen inventory change with time
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory.m
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_inventory_DIC.m
+run NCP_inventory.m
+run NCP_inventory_DIC.m
 % calculate entrainment
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment.m
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_entrainment_DIC.m
+run NCP_entrainment.m
+run NCP_entrainment_DIC.m
 % calculate advection term
 run NCP_advection_depthres.m
-% run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_advection.m
+% run NCP_advection.m
 run NCP_advection_depthres_DIC.m
 % calculate air-sea exchange
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange.m
-run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_airseaexchange_DIC.m
+run NCP_airseaexchange.m
+run NCP_airseaexchange_DIC.m
 % get diapycnal diffusion
 %run NCP_kz.m % exclude this, not required
 %% calculate NCP and associated errors
