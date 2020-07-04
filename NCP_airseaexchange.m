@@ -44,8 +44,17 @@ O2_ase.KO2 = 0.251 .* O2_ase.wind10.^2 .* ((O2_ase.ScO2/660).^-0.5); % gas diffu
 
 %% Calculate airsea exchange
 % gas diffusivity, bubble, and schmidt also calculated in funciton 'ASEflux'
-[O2_ase.ASE O2_ase.ASE_uncertainty] = ASEflux(O2_ase.Temp, O2_ase.wind10, O2_ase.wind10sq, ...
+[O2_ase.ASE O2_ase.ASE_uncertainty O2_ase.KO2 O2_ase.Sch O2_ase.bub] = ASEflux(O2_ase.Temp, O2_ase.wind10, O2_ase.wind10sq, ...
     [means_struct.O2_surf],[means_struct.O2_surf_std],O2_ase.O2_saturation,O2_ase.press,1,1);
+
+%% correct ASE for mixing effects
+
+Zlim = options.h;
+MLDs = [means_struct.MLD_h];
+O2_ase.correction = Zlim ./ MLDs;
+O2_ase.correction(O2_ase.correction > 1) = 1;
+
+O2_ase.ASE = O2_ase.ASE.*O2_ase.correction;
 
 disp('O2 air-sea exchange | calculated');
 
