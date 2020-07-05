@@ -16,6 +16,7 @@ clc
 %% Addpath and load in data
 
 options.directory = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts'
+options.data_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/data/'
 options.plot_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/Plots/'
 addpath(genpath(options.directory));
 load([options.directory,'/data/prcdata.mat'],'prcdata');
@@ -24,7 +25,7 @@ load([options.directory,'/data/METEO.mat']);
 %% define options for NCP calculation
 
 % top layer of interest 
-options.h = 17; % metres
+options.h = 100; % metres
 % moving window range 
 options.window = 2; % (e.g. +- number)
 % moving window range extender for advection planes
@@ -165,14 +166,16 @@ run NCP_advection_depthres_DIC.m
 run NCP_airseaexchange.m
 run NCP_airseaexchange_DIC.m
 % get diapycnal diffusion
-%run NCP_kz.m % exclude this, not required
+run NCP_kz.m % exclude this, not required
 %% calculate NCP and associated errors
 % concatenate advection
 ADV = [O2_adv.adv]; ADV_DIC = [DIC_adv.adv];
 NCP_est = O2_inv.inv(2:end-1)'  + ADV(2:end-1)  + O2_ase.ASE(2:end-1) - [O2_ent.ent];
 NCP_est_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
-%NCP_est_kz = O2_inv.inv(2:end-1)'  + ADV(2:end-1)  + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
-%NCP_est_kz_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
+NCP_est_kz = O2_inv.inv(2:end-1)'  + ADV(2:end-1)  + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
+NCP_est_kz_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
+NCP_est_kz_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
+NCP_est_kz_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
 NCP_est_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent];
 NCP_est_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
 % get errors
@@ -181,13 +184,12 @@ plot_days = options.dayrange(2:end-1);
 
 %% run NCP_buoy and create table of vals
 % get buoy vals
-%run NCP_buoy
+run NCP_buoy
 % get table vales
-%run NCP_table.m
+run NCP_table.m
 
-
-
+% NOTE: no errors added at the moment
 
 
 %% save NCP
-% save([options.directory,'/data/NCP.mat']);  
+save([options.data_dir,'NCP_',num2str(options.h),'m.mat']);  
