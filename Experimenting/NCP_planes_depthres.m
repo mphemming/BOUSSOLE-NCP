@@ -6,14 +6,14 @@
 % needed to calculate the advection term
 
 % created by MPH in Norwich, 14/11/2017
-% modified by MPH in Sydney, 21/06/2019
+% modified by MPH in Sydney,05/07/2020
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% if saved file already, don't need to do all of below
 testing =1;
-if sum(~exist('planes.mat','file') + testing == 1) ~= 0
+if exist([options.data_dir,'planes_',num2str(options.h),'.mat'],'file') | testing == 1 
 
 %% get concatenated geopotential anomaly profile arrays for planes
 
@@ -357,12 +357,12 @@ end
 
 clear O2_dayUmb *dayPUmb ii bin_depth_check bn check* date_num day GPA GPA_* lat lon press_selection *_bin
 %% save file for later use
-save('planes','planes_loop');
+save([options.data_dir,'planes_',num2str(options.h),'.mat'],'planes_loop');
 
 %% if file already created
 else
     disp(['O2 Plane-fits | Loading previously created file containing O2 Plane-fits']);
-    load('planes.mat');
+    load([options.data_dir,'planes_',num2str(options.h),'.mat']);
 end
     means_struct = [planes_loop.means];
     disp(['O2 Plane-fits | Finished']);
