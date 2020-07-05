@@ -16,15 +16,16 @@
 % close all
 % clc
 
-options.directory = '/Users/Michael/Documents/Work/UEA/NCP_scripts'
-options.plot_dir = '/Users/Michael/Documents/Work/UEA/NCP_scripts/Plots/'
+options.directory = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts'
+options.data_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/data/'
+options.plot_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/Plots/'
 addpath(genpath(options.directory));
-load([options.directory,'/data/prcdata.mat'],'prcdata');
-load([options.directory,'/data/METEO.mat']);  
-load([options.directory,'/data/BOUSSOLE.mat']);  
-load([options.directory,'/data/closeness.mat']);  
-load([options.directory,'/data/CTD.mat']);  
-% load([options.directory,'/data/NCP.mat']);  
+load([options.data_dir,'prcdata.mat'],'prcdata');
+load([options.data_dir,'METEO.mat']);  
+load([options.data_dir,'BOUSSOLE.mat']);  
+load([options.data_dir,'closeness.mat']);  
+load([options.data_dir,'CTD.mat']);  
+
 
 %% Get variables for BOUSSOLE using 3 hr bins
 
@@ -54,7 +55,7 @@ MET.press = METEO.sea_level_pressure;
 [C,ia,ic] = unique(METEO.date);
 MET.press = interp1(METEO.date(ia),METEO.sea_level_pressure(ia),MET.t);
 
-d = datenum(2016,03,10,00,00,00):datenum(00,00,00,03,00,00):datenum(2016,04,3,00,00,00)
+d = datenum(2016,03,10,00,00,00):datenum(00,00,00,03,00,00):datenum(2016,04,3,00,00,00);
 
 for dl = 1:length(d);
     daynum = d(dl);
@@ -221,57 +222,57 @@ NCP_O2.M2901.check = check;
 %     (buoy_error_DIC.SE_line_29_01.sum_t2_n -buoy_error_DIC.SE_line_29_01.sum_t_2);
 % buoy_error_DIC.SE_line_29_01.sigma = real(sqrt(buoy_error_DIC.SE_line_29_01.sigma_m_2));
 
-buoy_error_DIC.SE_line_20_25 = NCP_DIC.M2025.gof.rmse;
-buoy_error_DIC.SE_line_29_01 = NCP_DIC.M2901.gof.rmse;
-buoy_error_DIC.ase_20_25 = nanmean(...
-    errors.ASE.errors_ASE_DIC([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)))
-buoy_error_DIC.ase_29_01 = nanmean(...
-    errors.ASE.errors_ASE_DIC([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)))
-EADV = [errors.ADV_DIC.errors_adv].*([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
-EADV(EADV == 0) = [];
-buoy_error_DIC.adv_20_25 = nanmean(EADV);
-EADV = [errors.ADV_DIC.errors_adv].*([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
-EADV(EADV == 0) = [];
-buoy_error_DIC.adv_29_01 = nanmean(EADV);
-
-buoy_error_DIC.error_20_25_adv = sqrt ( ((buoy_error_DIC.SE_line_20_25).^2) + ((buoy_error_DIC.ase_20_25).^2) + ((buoy_error_DIC.adv_20_25).^2) );
-buoy_error_DIC.error_29_01_adv = sqrt ( ((buoy_error_DIC.SE_line_29_01).^2) + ((buoy_error_DIC.ase_29_01).^2) + ((buoy_error_DIC.adv_29_01).^2) );
-buoy_error_DIC.error_20_25 = sqrt ( ((buoy_error_DIC.SE_line_20_25).^2) + ((buoy_error_DIC.ase_20_25).^2) );
-buoy_error_DIC.error_29_01 = sqrt (  ((buoy_error_DIC.SE_line_29_01).^2) + ((buoy_error_DIC.ase_29_01).^2) );
+% buoy_error_DIC.SE_line_20_25 = NCP_DIC.M2025.gof.rmse;
+% buoy_error_DIC.SE_line_29_01 = NCP_DIC.M2901.gof.rmse;
+% buoy_error_DIC.ase_20_25 = nanmean(...
+%     errors.ASE.errors_ASE_DIC([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)))
+% buoy_error_DIC.ase_29_01 = nanmean(...
+%     errors.ASE.errors_ASE_DIC([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)))
+% EADV = [errors.ADV_DIC.errors_adv].*([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
+% EADV(EADV == 0) = [];
+% buoy_error_DIC.adv_20_25 = nanmean(EADV);
+% EADV = [errors.ADV_DIC.errors_adv].*([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+% EADV(EADV == 0) = [];
+% buoy_error_DIC.adv_29_01 = nanmean(EADV);
+% 
+% buoy_error_DIC.error_20_25_adv = sqrt ( ((buoy_error_DIC.SE_line_20_25).^2) + ((buoy_error_DIC.ase_20_25).^2) + ((buoy_error_DIC.adv_20_25).^2) );
+% buoy_error_DIC.error_29_01_adv = sqrt ( ((buoy_error_DIC.SE_line_29_01).^2) + ((buoy_error_DIC.ase_29_01).^2) + ((buoy_error_DIC.adv_29_01).^2) );
+% buoy_error_DIC.error_20_25 = sqrt ( ((buoy_error_DIC.SE_line_20_25).^2) + ((buoy_error_DIC.ase_20_25).^2) );
+% buoy_error_DIC.error_29_01 = sqrt (  ((buoy_error_DIC.SE_line_29_01).^2) + ((buoy_error_DIC.ase_29_01).^2) );
 
 % O2
-
-buoy_error_O2.SE_line_20_25 = NCP_O2.M2025.gof.rmse;
-buoy_error_O2.SE_line_29_01 = NCP_O2.M2901.gof.rmse;
-% ASE errors
-buoy_error_O2.o2sat = o2satSTP([bins.BT], [bins.BS], atmpress/100) - ...
-    o2satSTP([bins.BT]+[bins.BT_std], [bins.BS]+[bins.BS_std], (atmpress+[bins.press_std])/100);
-buoy_error_O2.o2sat = (dens/1000) .* buoy_error_O2.o2sat; 
-buoy_error_O2.KO2 = ASE_uncertainty.ASEAlkireKO2val/100*24;
-buoy_error_O2.ase_20_25= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
-buoy_error_O2.ase_20_25 = nanmean(buoy_error_O2.ase_20_25(t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00)));
-buoy_error_O2.ase_29_01= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
-buoy_error_O2.ase_29_01 = nanmean(buoy_error_O2.ase_29_01(t > datenum(2016,03,29,00,00,00) & t < datenum(2016,04,02,00,00,00)));
-
-% buoy_error_O2.ase_20_25 = nanmean(...
-%     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)));
-% buoy_error_O2.ase_29_01 = nanmean(...
-%     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)));
-EADV = [errors.ADV.errors_adv].*([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
-EADV(EADV == 0) = [];
-buoy_error_O2.adv_20_25 = nanmean(EADV);
-EADV = [errors.ADV.errors_adv].*([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
-EADV(EADV == 0) = [];
-buoy_error_O2.adv_29_01 = nanmean(EADV);
-    
-buoy_error_O2.error_20_25_adv = sqrt ( ((buoy_error_O2.SE_line_20_25).^2) + ((buoy_error_O2.ase_20_25).^2) + ((buoy_error_O2.adv_20_25).^2) );
-buoy_error_O2.error_29_01_adv = sqrt ( ((buoy_error_O2.SE_line_29_01).^2) + ((buoy_error_O2.ase_29_01).^2) + ((buoy_error_O2.adv_29_01).^2) );
-buoy_error_O2.error_20_25 = sqrt ( ((buoy_error_O2.SE_line_20_25).^2) + ((buoy_error_O2.ase_20_25).^2) );
-buoy_error_O2.error_29_01 = sqrt (  ((buoy_error_O2.SE_line_29_01).^2) + ((buoy_error_O2.ase_29_01).^2) );
+% 
+% buoy_error_O2.SE_line_20_25 = NCP_O2.M2025.gof.rmse;
+% buoy_error_O2.SE_line_29_01 = NCP_O2.M2901.gof.rmse;
+% % ASE errors
+% buoy_error_O2.o2sat = o2satSTP([bins.BT], [bins.BS], atmpress/100) - ...
+%     o2satSTP([bins.BT]+[bins.BT_std], [bins.BS]+[bins.BS_std], (atmpress+[bins.press_std])/100);
+% buoy_error_O2.o2sat = (dens/1000) .* buoy_error_O2.o2sat; 
+% buoy_error_O2.KO2 = ASE_uncertainty.ASEAlkireKO2val/100*24;
+% buoy_error_O2.ase_20_25= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
+% buoy_error_O2.ase_20_25 = nanmean(buoy_error_O2.ase_20_25(t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00)));
+% buoy_error_O2.ase_29_01= sqrt((buoy_error_O2.KO2 .* buoy_error_O2.o2sat).^2);  
+% buoy_error_O2.ase_29_01 = nanmean(buoy_error_O2.ase_29_01(t > datenum(2016,03,29,00,00,00) & t < datenum(2016,04,02,00,00,00)));
+% 
+% % buoy_error_O2.ase_20_25 = nanmean(...
+% %     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25)));
+% % buoy_error_O2.ase_29_01 = nanmean(...
+% %     errors.ASE.errors_ASE([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02)));
+% EADV = [errors.ADV.errors_adv].*([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
+% EADV(EADV == 0) = [];
+% buoy_error_O2.adv_20_25 = nanmean(EADV);
+% EADV = [errors.ADV.errors_adv].*([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+% EADV(EADV == 0) = [];
+% buoy_error_O2.adv_29_01 = nanmean(EADV);
+%     
+% buoy_error_O2.error_20_25_adv = sqrt ( ((buoy_error_O2.SE_line_20_25).^2) + ((buoy_error_O2.ase_20_25).^2) + ((buoy_error_O2.adv_20_25).^2) );
+% buoy_error_O2.error_29_01_adv = sqrt ( ((buoy_error_O2.SE_line_29_01).^2) + ((buoy_error_O2.ase_29_01).^2) + ((buoy_error_O2.adv_29_01).^2) );
+% buoy_error_O2.error_20_25 = sqrt ( ((buoy_error_O2.SE_line_20_25).^2) + ((buoy_error_O2.ase_20_25).^2) );
+% buoy_error_O2.error_29_01 = sqrt (  ((buoy_error_O2.SE_line_29_01).^2) + ((buoy_error_O2.ase_29_01).^2) );
     
 %% clear uneccessary variables
 
-clearvars -except NCP* DIC* O2* errors planes_loop options buoy_error* NCP_O2 NCP_DIC
+clearvars -except NCP* DIC* O2* errors planes_loop options buoy_error* NCP_O2 NCP_DIC vars means_struct
 
     
     
