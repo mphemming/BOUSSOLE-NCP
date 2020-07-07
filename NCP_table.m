@@ -42,7 +42,7 @@ N_table.O2_glider.M1019.NCP_no_adv_C = N_table.O2_glider.M1019.NCP_no_adv/1.45;
 % N_table.O2_glider.M1019.NCP_no_adv_error_C = N_table.O2_glider.M1019.NCP_no_adv_error/1.45;
 
 % 20-25 March
-check = N_table.O2_glider.days > datenum(2016,03,20) & N_table.O2_glider.days < datenum(2016,03,25);
+check = N_table.O2_glider.days >= datenum(2016,03,20) & N_table.O2_glider.days <= datenum(2016,03,25);
 N_table.O2_glider.M2025.days = N_table.O2_glider.days(check);
 N_table.O2_glider.M2025.FADV = nanmean(N_table.O2_glider.ADV(check));
 % N_table.O2_glider.M2025.FADV_error = nanmean(N_table.O2_glider.ADV_error(check));
@@ -59,7 +59,7 @@ N_table.O2_glider.M2025.NCP_no_adv_C = N_table.O2_glider.M2025.NCP_no_adv/1.45;
 
 
 % 29-01 April
-check = N_table.O2_glider.days > datenum(2016,03,29) & N_table.O2_glider.days < datenum(2016,04,02);
+check = N_table.O2_glider.days >= datenum(2016,03,29) & N_table.O2_glider.days <= datenum(2016,04,02);
 N_table.O2_glider.M2901.days = N_table.O2_glider.days(check);
 N_table.O2_glider.M2901.FADV = nanmean(N_table.O2_glider.ADV(check));
 % N_table.O2_glider.M2901.FADV_error = nanmean(N_table.O2_glider.ADV_error(check));
@@ -135,7 +135,7 @@ N_table.DIC_glider.M1019.NCP_no_adv_O2 = N_table.DIC_glider.M1019.NCP_no_adv*1.4
 % N_table.DIC_glider.M1019.NCP_no_adv_error_O2 = N_table.DIC_glider.M1019.NCP_no_adv_error*1.45;
 
 % 20-25 March
-check = N_table.DIC_glider.days > datenum(2016,03,20) & N_table.DIC_glider.days < datenum(2016,03,25);
+check = N_table.DIC_glider.days >= datenum(2016,03,20) & N_table.DIC_glider.days <= datenum(2016,03,25);
 N_table.DIC_glider.M2025.days = N_table.DIC_glider.days(check);
 N_table.DIC_glider.M2025.FADV = nanmean(N_table.DIC_glider.ADV(check));
 % N_table.DIC_glider.M2025.FADV_error = nanmean(N_table.DIC_glider.ADV_error(check));
@@ -151,7 +151,7 @@ N_table.DIC_glider.M2025.NCP_no_adv_O2 = N_table.DIC_glider.M2025.NCP_no_adv*1.4
 % N_table.DIC_glider.M2025.NCP_no_adv_error_O2 = N_table.DIC_glider.M2025.NCP_no_adv_error*1.45;
 
 % 29 March - 01 April
-check = N_table.DIC_glider.days > datenum(2016,03,29) & N_table.DIC_glider.days < datenum(2016,04,02);
+check = N_table.DIC_glider.days >= datenum(2016,03,29) & N_table.DIC_glider.days < datenum(2016,04,02);
 N_table.DIC_glider.M2901.days = N_table.DIC_glider.days(check);
 N_table.DIC_glider.M2901.FADV = nanmean(N_table.DIC_glider.ADV(check));
 % N_table.DIC_glider.M2901.FADV_error = nanmean(N_table.DIC_glider.ADV_error(check));
@@ -189,29 +189,39 @@ N_table.DIC_glider.M1025.NCP_no_adv_O2 = N_table.DIC_glider.M1025.NCP_no_adv*1.4
 % 20-25 March
 N_table.DIC_buoy.M2025.ASE = nanmean(NCP_DIC.M2025.F);
 % N_table.DIC_buoy.M2025.ASE_error = buoy_error_DIC.ase_20_25;
-N_table.DIC_buoy.M2025.ADV = N_table.DIC_glider.M2025.FADV;
+N_table.DIC_buoy.M2025.ADV_30 = nanmean(NCP_DIC.M2025.ADV_30(NCP_DIC.M2025.ADV_30 ~= 0));
+N_table.DIC_buoy.M2025.ADV_46 = nanmean(NCP_DIC.M2025.ADV_46(NCP_DIC.M2025.ADV_46 ~= 0));
 % N_table.DIC_buoy.M2025.ADV_error = buoy_error_DIC.adv_20_25;
 N_table.DIC_buoy.M2025.NCP = NCP_DIC.M2025.NCP;
+N_table.DIC_buoy.M2025.NCP_46 = NCP_DIC.M2025.NCP_46;
 % N_table.DIC_buoy.M2025.NCP_error = buoy_error_DIC.error_20_25;
 N_table.DIC_buoy.M2025.NCP_ADV = NCP_DIC.M2025.NCP_ADV;
+N_table.DIC_buoy.M2025.NCP_ADV_46 = NCP_DIC.M2025.NCP_ADV_46;
 % N_table.DIC_buoy.M2025.NCP_ADV_error = buoy_error_DIC.error_20_25_adv;
 N_table.DIC_buoy.M2025.NCP_O2 = N_table.DIC_buoy.M2025.NCP*1.45;
+N_table.DIC_buoy.M2025.NCP_O2_46 = N_table.DIC_buoy.M2025.NCP_46*1.45;
 % N_table.DIC_buoy.M2025.NCP_error_O2 = N_table.DIC_buoy.M2025.NCP_error*1.45;
 N_table.DIC_buoy.M2025.NCP_ADV_O2 = N_table.DIC_buoy.M2025.NCP_ADV*1.45;
+N_table.DIC_buoy.M2025.NCP_ADV_O2_46 = N_table.DIC_buoy.M2025.NCP_ADV_46*1.45;
 % N_table.DIC_buoy.M2025.NCP_ADV_error_O2 = N_table.DIC_buoy.M2025.NCP_ADV_error*1.45;
 
 % 29-01 April
 N_table.DIC_buoy.M2901.ASE = nanmean(NCP_DIC.M2901.F);
 % N_table.DIC_buoy.M2901.ASE_error = buoy_error_DIC.ase_29_01;
-N_table.DIC_buoy.ADV = N_table.DIC_glider.M2901.FADV;
+N_table.DIC_buoy.M2901.ADV_22 = nanmean(NCP_DIC.M2901.ADV_22(NCP_DIC.M2901.ADV_22 ~= 0));
+N_table.DIC_buoy.M2901.ADV_46 = nanmean(NCP_DIC.M2901.ADV_46(NCP_DIC.M2901.ADV_46 ~= 0));
 % N_table.DIC_buoy.ADV_error = buoy_error_DIC.adv_29_01;
 N_table.DIC_buoy.M2901.NCP = NCP_DIC.M2901.NCP;
+N_table.DIC_buoy.M2901.NCP_46 = NCP_DIC.M2901.NCP_46;
 % N_table.DIC_buoy.M2901.NCP_error = buoy_error_DIC.error_29_01;
 N_table.DIC_buoy.M2901.NCP_ADV = NCP_DIC.M2901.NCP_ADV;
+N_table.DIC_buoy.M2901.NCP_ADV_46 = NCP_DIC.M2901.NCP_ADV_46;
 % N_table.DIC_buoy.NCP_ADV_error = buoy_error_DIC.error_29_25_01;
 N_table.DIC_buoy.M2901.NCP_O2 = N_table.DIC_buoy.M2901.NCP*1.45;
+N_table.DIC_buoy.M2901.NCP_O2_46 = N_table.DIC_buoy.M2901.NCP_46*1.45;
 % N_table.DIC_buoy.M2901.NCP_error_O2 = N_table.DIC_buoy.M2901.NCP_error*1.45;
 N_table.DIC_buoy.M2901.NCP_ADV_O2 = N_table.DIC_buoy.M2901.NCP_ADV*1.45;
+N_table.DIC_buoy.M2901.NCP_ADV_O2_46 = N_table.DIC_buoy.M2901.NCP_ADV_46*1.45;
 % N_table.DIC_buoy.M2025.NCP_ADV_error_O2 = N_table.DIC_buoy.M2025.NCP_ADV_error*1.45;
 
 %% O2
@@ -219,29 +229,39 @@ N_table.DIC_buoy.M2901.NCP_ADV_O2 = N_table.DIC_buoy.M2901.NCP_ADV*1.45;
 % 20-25 March
 N_table.O2_buoy.M2025.ASE = NCP_O2.M2025.ASE;
 % N_table.O2_buoy.M2025.ASE_error = buoy_error_O2.ase_20_25;
-N_table.O2_buoy.M2025.ADV = N_table.O2_glider.M2025.FADV;
+N_table.O2_buoy.M2025.ADV_30 = nanmean(NCP_O2.M2025.ADV_30(NCP_O2.M2025.ADV_30 ~= 0));
+N_table.O2_buoy.M2025.ADV_46 = nanmean(NCP_O2.M2025.ADV_46(NCP_O2.M2025.ADV_46 ~= 0));
 % N_table.O2_buoy.M2025.ADV_error = buoy_error_O2.adv_20_25;
 N_table.O2_buoy.M2025.NCP = NCP_O2.M2025.NCP;
+N_table.O2_buoy.M2025.NCP_46 = NCP_O2.M2025.NCP_46;
 % N_table.O2_buoy.M2025.NCP_error = buoy_error_O2.error_20_25;
 N_table.O2_buoy.M2025.NCP_ADV = NCP_O2.M2025.NCP_ADV;
+N_table.O2_buoy.M2025.NCP_ADV_46 = NCP_O2.M2025.NCP_ADV_46;
 % N_table.O2_buoy.M2025.NCP_ADV_error = buoy_error_O2.error_20_25_adv;
 N_table.O2_buoy.M2025.NCP_DIC = N_table.O2_buoy.M2025.NCP/1.45;
+N_table.O2_buoy.M2025.NCP_DIC_46 = N_table.O2_buoy.M2025.NCP_46/1.45;
 % N_table.O2_buoy.M2025.NCP_error_DIC = N_table.O2_buoy.M2025.NCP_error/1.45;
 N_table.O2_buoy.M2025.NCP_ADV_DIC = N_table.O2_buoy.M2025.NCP_ADV/1.45;
+N_table.O2_buoy.M2025.NCP_ADV_DIC_46 = N_table.O2_buoy.M2025.NCP_ADV_46/1.45;
 % N_table.O2_buoy.M2025.NCP_ADV_error_DIC = N_table.O2_buoy.M2025.NCP_ADV_error/1.45;
 
 % 29-01 April
 N_table.O2_buoy.M2901.ASE = NCP_O2.M2901.ASE;
 % N_table.O2_buoy.M2901.ASE_error = buoy_error_O2.ase_29_01;
-N_table.O2_buoy.M2901.ADV = N_table.O2_glider.M2901.FADV;
+N_table.O2_buoy.M2901.ADV_22 = nanmean(NCP_O2.M2901.ADV_22(NCP_O2.M2901.ADV_22 ~= 0));
+N_table.O2_buoy.M2901.ADV_46 = nanmean(NCP_O2.M2901.ADV_46(NCP_O2.M2901.ADV_46 ~= 0));
 % N_table.O2_buoy.M2901.ADV_error = buoy_error_O2.adv_29_01;
 N_table.O2_buoy.M2901.NCP = NCP_O2.M2901.NCP;
+N_table.O2_buoy.M2901.NCP_46 = NCP_O2.M2901.NCP_46;
 % N_table.O2_buoy.M2901.NCP_error = buoy_error_O2.error_29_01;
 N_table.O2_buoy.M2901.NCP_ADV = NCP_O2.M2901.NCP_ADV;
+N_table.O2_buoy.M2901.NCP_ADV_46 = NCP_O2.M2901.NCP_ADV_46;
 % N_table.O2_buoy.M2901.NCP_ADV_error = buoy_error_O2.error_29_01_adv;
 N_table.O2_buoy.M2901.NCP_DIC = N_table.O2_buoy.M2901.NCP/1.45;
+N_table.O2_buoy.M2901.NCP_DIC_46 = N_table.O2_buoy.M2901.NCP_46/1.45;
 % N_table.O2_buoy.M2901.NCP_error_DIC = N_table.O2_buoy.M2901.NCP_error/1.45;
 N_table.O2_buoy.M2901.NCP_ADV_DIC = N_table.O2_buoy.M2901.NCP_ADV/1.45;
+N_table.O2_buoy.M2901.NCP_ADV_DIC_46 = N_table.O2_buoy.M2901.NCP_ADV_46/1.45;
 % N_table.O2_buoy.M2901.NCP_ADV_error_DIC = N_table.O2_buoy.M2901.NCP_ADV_error/1.45;
 
 %% Get average errors for terms for uncertainty table
