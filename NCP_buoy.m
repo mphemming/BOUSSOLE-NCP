@@ -109,9 +109,15 @@ NCP_DIC.M2025.pCO2atm = interp1(METEO.date(check_METEO),NCP_DIC.xpCO2.val_int_pC
 NCP_DIC.M2025.t = t(check)';
 NCP_DIC.M2025.DIC = DIC(check)';
 % estimate NCP and advection
+DIC_ADV_22m = load('NCP_22m.mat','DIC_adv');
+DIC_ADV_30m = load('NCP_30m.mat','DIC_adv');
+DIC_ADV_46m = load('NCP_46m.mat','DIC_adv');
 NCP_DIC.M2025.NCP = (1.029 * 30 * NCP_DIC.M2025.fit.p1 + nanmean(NCP_DIC.M2025.F)) ; % mmol m^-3 d-1
-NCP_DIC.M2025.ADV = [DIC_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
-NCP_DIC.M2025.NCP_ADV = (NCP_DIC.M2025.NCP + nanmean(NCP_DIC.M2025.ADV(NCP_DIC.M2025.ADV ~= 0))); % mmol m^-3 d-1
+NCP_DIC.M2025.NCP_46 = (1.029 * 46 * NCP_DIC.M2025.fit.p1 + nanmean(NCP_DIC.M2025.F)) ; % mmol m^-3 d-1
+NCP_DIC.M2025.ADV_30 = [DIC_ADV_30m.DIC_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
+NCP_DIC.M2025.ADV_46 = [DIC_ADV_46m.DIC_adv.adv] .* ([planes_loop.date_num] >= datenum(2016,03,20) & [planes_loop.date_num] <= datenum(2016,03,25));
+NCP_DIC.M2025.NCP_ADV = (NCP_DIC.M2025.NCP + nanmean(NCP_DIC.M2025.ADV_30(NCP_DIC.M2025.ADV_30 ~= 0))); % mmol m^-3 d-1
+NCP_DIC.M2025.NCP_ADV_46 = (NCP_DIC.M2025.NCP_46 + nanmean(NCP_DIC.M2025.ADV_46(NCP_DIC.M2025.ADV_46 ~= 0))); % mmol m^-3 d-1
 NCP_DIC.M2025.check = check;
 %------------------------------------------------------------------------------------------------------------------------------------
 % NCP 29/03 - 01/04
@@ -129,8 +135,11 @@ NCP_DIC.M2901.t = t(check)';
 NCP_DIC.M2901.DIC =DIC(check)';
 % estimate NCP and advection
 NCP_DIC.M2901.NCP = (1.029 * 22 * NCP_DIC.M2901.fit.p1 + nanmean(NCP_DIC.M2901.F)) ; % mmol m^-3 d-1
-NCP_DIC.M2901.ADV = [DIC_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
-NCP_DIC.M2901.NCP_ADV = NCP_DIC.M2901.NCP + nanmean(NCP_DIC.M2901.ADV(NCP_DIC.M2901.ADV ~= 0)); % mmol m^-3 d-1
+NCP_DIC.M2901.NCP_46 = (1.029 * 46 * NCP_DIC.M2901.fit.p1 + nanmean(NCP_DIC.M2901.F)) ; % mmol m^-3 d-1
+NCP_DIC.M2901.ADV_22 = [DIC_ADV_22m.DIC_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+NCP_DIC.M2901.ADV_46 = [DIC_ADV_46m.DIC_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+NCP_DIC.M2901.NCP_ADV = NCP_DIC.M2901.NCP + nanmean(NCP_DIC.M2901.ADV_22(NCP_DIC.M2901.ADV_22 ~= 0)); % mmol m^-3 d-1
+NCP_DIC.M2901.NCP_ADV_46 = NCP_DIC.M2901.NCP + nanmean(NCP_DIC.M2901.ADV_46(NCP_DIC.M2901.ADV_46 ~= 0)); % mmol m^-3 d-1
 NCP_DIC.M2901.check = check;
     
 %% O2 NCP
@@ -158,6 +167,9 @@ KO2 = 0.251 .* wind10.^2 .* ((ScO2/660).^-0.5); % gas diffusivity
 [ASE ASE_uncertainty] = ASEflux(T, wind10, wind10.^2, ...
     O2,ones(size(O2)),O2_saturation,atmpress,1,1);
 
+O2_ADV_22m = load('NCP_22m.mat','O2_adv');
+O2_ADV_30m = load('NCP_30m.mat','O2_adv');
+O2_ADV_46m = load('NCP_46m.mat','O2_adv');
 %------------------------------------------------------------------------------------------------------------------------------------
 % NCP 20 - 25th March
 check = t > datenum(2016,03,20,00,00,00) & t < datenum(2016,03,25,00,00,00) & ~isnan(t) & ~isnan(O2);
@@ -168,8 +180,11 @@ NCP_O2.M2025.O2 =O2(check)';
 NCP_O2.M2025.ASE = nanmean(ASE(check));
 % previously 46 m, can use option.h, or now trying mean MLD (options.h m)
 NCP_O2.M2025.NCP = 1.029 * 30 * NCP_O2.M2025.fit.p1 + NCP_O2.M2025.ASE; % mmol m^-3 d-1
-NCP_O2.M2025.ADV = [O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
-NCP_O2.M2025.NCP_ADV = NCP_O2.M2025.NCP + nanmean(NCP_O2.M2025.ADV(NCP_O2.M2025.ADV ~= 0)); % mmol m^-3 d-1
+NCP_O2.M2025.NCP_46 = 1.029 * 46 * NCP_O2.M2025.fit.p1 + NCP_O2.M2025.ASE; % mmol m^-3 d-1
+NCP_O2.M2025.ADV_30 = [O2_ADV_30m.O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
+NCP_O2.M2025.ADV_46 = [O2_ADV_46m.O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,20) & [planes_loop.date_num] < datenum(2016,03,25));
+NCP_O2.M2025.NCP_ADV = NCP_O2.M2025.NCP + nanmean(NCP_O2.M2025.ADV_30(NCP_O2.M2025.ADV_30 ~= 0)); % mmol m^-3 d-1
+NCP_O2.M2025.NCP_ADV_46 = NCP_O2.M2025.NCP_46 + nanmean(NCP_O2.M2025.ADV_46(NCP_O2.M2025.ADV_46 ~= 0)); % mmol m^-3 d-1
 NCP_O2.M2025.check = check;    
 %------------------------------------------------------------------------------------------------------------------------------------
 % NCP 29/03 - 01/04
@@ -180,8 +195,11 @@ NCP_O2.M2901.O2 =O2(check)';
 % estimate NCP and advection
 NCP_O2.M2901.ASE = nanmean(ASE(check));
 NCP_O2.M2901.NCP = 1.029 * 22 * NCP_O2.M2901.fit.p1 + NCP_O2.M2901.ASE; % mmol m^-3 d-1
-NCP_O2.M2901.ADV = [O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,02));
-NCP_O2.M2901.NCP_ADV = NCP_O2.M2901.NCP + nanmean(NCP_O2.M2901.ADV(NCP_O2.M2901.ADV ~= 0)); % mmol m^-3 d-1
+NCP_O2.M2901.NCP_46 = 1.029 * 46 * NCP_O2.M2901.fit.p1 + NCP_O2.M2901.ASE; % mmol m^-3 d-1
+NCP_O2.M2901.ADV_22 = [O2_ADV_22m.O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+NCP_O2.M2901.ADV_46 = [O2_ADV_46m.O2_adv.adv] .* ([planes_loop.date_num] > datenum(2016,03,29) & [planes_loop.date_num] < datenum(2016,04,01));
+NCP_O2.M2901.NCP_ADV = NCP_O2.M2901.NCP + nanmean(NCP_O2.M2901.ADV_22(NCP_O2.M2901.ADV_22 ~= 0)); % mmol m^-3 d-1
+NCP_O2.M2901.NCP_ADV_46 = NCP_O2.M2901.NCP_46 + nanmean(NCP_O2.M2901.ADV_46(NCP_O2.M2901.ADV_46 ~= 0)); % mmol m^-3 d-1
 NCP_O2.M2901.check = check;     
     
 %% errors for buoy NCP
