@@ -13,7 +13,140 @@ disp('NCP and errors (O2 & DIC) | Calculating ');
 
 %% get errors for some variables
 
+%% obtain standard deviations in space for time window
+    
+for day = options.dayrange
 
+    %% data selection logical vector to include data 2 days eitoptions.her side of day
+    % different vectors because of different dimensions
+    errors.selection(day-8).tday = vars.t > planes_loop(day).date_num - options.window ...
+        & vars.t < planes_loop(day).date_num + options.window;    % full profile deptoptions.h
+    errors.selection(day-8).tdayP = vars.t > planes_loop(day).date_num - options.window ...
+        & vars.t < planes_loop(day).date_num + options.window & vars.P < options.h;  % only top options.h metres
+    errors.selection(day-8).tdayPsurf = vars.t > planes_loop(day).date_num - options.window ... 
+        & vars.t < planes_loop(day).date_num + options.window & vars.P < 10;  % only tsurface 
+    errors.selection(day-8).tdayDAC = vars.DACs.t > planes_loop(day).date_num - options.window ...
+        & vars.DACs.t < planes_loop(day).date_num + options.window; % for DACs
+
+    %% DAC errors
+
+    errors.ADV(day-8).meanlon = nanmean(vars.DACs.lon(errors.selection(day-8).tdayDAC));
+    errors.ADV(day-8).meanlat = nanmean(vars.DACs.lat(errors.selection(day-8).tdayDAC));    
+    errors.ADV(day-8).meanDACu = nanmean(vars.DACs.DACu(errors.selection(day-8).tdayDAC));
+    errors.ADV(day-8).meanDACv = nanmean(vars.DACs.DACv(errors.selection(day-8).tdayDAC));
+    errors.ADV(day-8).stdDACu = nanstd(vars.DACs.DACu(errors.selection(day-8).tdayDAC));    
+    errors.ADV(day-8).stdDACv = nanstd(vars.DACs.DACv(errors.selection(day-8).tdayDAC));     
+    
+    %% oxygen spatial standard deviation
+    % mean for each profile within layer options.h
+    
+    errors.dives(day-8).divesO2 = vars.dive(errors.selection(day-8).tdayP); 
+    errors.dives(day-8).divesO2unique = unique(errors.dives(day-8).divesO2);
+    errors.dives(day-8).divesO2surf = vars.dive(errors.selection(day-8).tdayPsurf);     
+    
+    for divenumber = errors.dives(day-8).divesO2unique
+        errors.spatial(day-8).O2sp = vars.O2((errors.selection(day-8).tdayP));     
+        errors.spatial(day-8).O2splon = vars.lon((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).O2splat = vars.lat((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).O2sptemp = vars.T((errors.selection(day-8).tdayPsurf));        
+        errors.spatial(day-8).O2spsal = vars.S((errors.selection(day-8).tdayPsurf)); 
+        errors.spatial(day-8).O2spt = datevec(vars.t((errors.selection(day-8).tdayP)));
+        errors.spatial(day-8).O2spt = errors.spatial(day-8).O2spt(:,3);
+        errors.spatial(day-8).O2sptsurf = datevec(vars.t((errors.selection(day-8).tdayPsurf)));
+        errors.spatial(day-8).O2sptsurf = errors.spatial(day-8).O2sptsurf(:,3);       
+        errors.spatial(day-8).O2space(divenumber).mean = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber));  
+        
+        if day >= 9 & day <= 34  
+        errors.spatial(day-8).O2space(divenumber).inv_zmix2 = nanmean(...
+            errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber)) .* ...
+            means_struct(day-7).MLD_h; 
+        errors.spatial(day-8).O2space(divenumber).inv_zmix2_diff =  (nanmean(...
+            vars.O2(vars.dive == divenumber & vars.P > options.h & ...
+            vars.P <  means_struct(day-7).MLD_h)));
+        end
+        
+        errors.spatial(day-8).O2space(divenumber).lonmean = ...
+            nanmean(errors.spatial(day-8).O2splon(errors.dives(day-8).divesO2 == divenumber)); 
+        errors.spatial(day-8).O2space(divenumber).latmean = ...
+            nanmean(errors.spatial(day-8).O2splat(errors.dives(day-8).divesO2 == divenumber)); 
+        errors.spatial(day-8).O2space(divenumber).Tmean = ...
+            nanmean(errors.spatial(day-8).O2sptemp(errors.dives(day-8).divesO2surf == divenumber));         
+        errors.spatial(day-8).O2space(divenumber).Smean = ...
+            nanmean(errors.spatial(day-8).O2spsal(errors.dives(day-8).divesO2surf == divenumber));  
+
+        % only use values at edges of time window ( Toptions.his is wrong!?)
+        
+        errors.spatial(day-8).O2space(divenumber).mean_end = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
+        errors.spatial(day-8).O2space(divenumber).mean_begin = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));            
+        errors.spatial(day-8).O2space(divenumber).std_end = ...
+            nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
+        errors.spatial(day-8).O2space(divenumber).std_begin = ...
+            nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));  
+
+    end
+    
+   %% DIC spatial standard deviation
+    % mean for each profile within layer options.h
+    
+    errors.dives(day-8).divesDIC = vars.dive(errors.selection(day-8).tdayP); 
+    errors.dives(day-8).divesDICunique = unique(errors.dives(day-8).divesDIC);
+    errors.dives(day-8).divesDICsurf = vars.dive(errors.selection(day-8).tdayPsurf);     
+    
+    for divenumber = errors.dives(day-8).divesDICunique
+        errors.spatial(day-8).DICsp = vars.DIC((errors.selection(day-8).tdayP));     
+        errors.spatial(day-8).DICsplon = vars.lon((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).DICsplat = vars.lat((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).DICsptemp = vars.T((errors.selection(day-8).tdayPsurf));        
+        errors.spatial(day-8).DICspsal = vars.S((errors.selection(day-8).tdayPsurf)); 
+        errors.spatial(day-8).DICspt = datevec(vars.t((errors.selection(day-8).tdayP)));
+        errors.spatial(day-8).DICspt = errors.spatial(day-8).DICspt(:,3);
+        errors.spatial(day-8).DICsptsurf = datevec(vars.t((errors.selection(day-8).tdayPsurf)));
+        errors.spatial(day-8).DICsptsurf = errors.spatial(day-8).DICsptsurf(:,3);       
+        errors.spatial(day-8).DICspace(divenumber).mean = ...
+            nanmean(errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == divenumber));  
+        
+        if day >= 9 & day <= 34  
+        errors.spatial(day-8).DICspace(divenumber).inv_zmix2 = nanmean(...
+            errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == divenumber)) .* ...
+            means_struct(day-7).MLD_h; 
+        errors.spatial(day-8).DICspace(divenumber).inv_zmix2_diff =  (nanmean(...
+            vars.DIC(vars.dive == divenumber & vars.P > options.h & ...
+            vars.P <  means_struct(day-7).MLD_h)));
+        end
+        
+        errors.spatial(day-8).DICspace(divenumber).lonmean = ...
+            nanmean(errors.spatial(day-8).DICsplon(errors.dives(day-8).divesDIC == divenumber)); 
+        errors.spatial(day-8).DICspace(divenumber).latmean = ...
+            nanmean(errors.spatial(day-8).DICsplat(errors.dives(day-8).divesDIC == divenumber)); 
+        errors.spatial(day-8).DICspace(divenumber).Tmean = ...
+            nanmean(errors.spatial(day-8).DICsptemp(errors.dives(day-8).divesDICsurf == divenumber));         
+        errors.spatial(day-8).DICspace(divenumber).Smean = ...
+            nanmean(errors.spatial(day-8).DICspsal(errors.dives(day-8).divesDICsurf == divenumber));  
+
+        % only use values at edges of time window ( Toptions.his is wrong!?)
+        
+        errors.spatial(day-8).DICspace(divenumber).mean_end = ...
+            nanmean(errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == ...
+            divenumber & errors.spatial(day-8).DICspt' > nanmax(errors.spatial(day-8).DICspt)-1));        
+        errors.spatial(day-8).DICspace(divenumber).mean_begin = ...
+            nanmean(errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == ...
+            divenumber & errors.spatial(day-8).DICspt' < nanmin(errors.spatial(day-8).DICspt)+1));            
+        errors.spatial(day-8).DICspace(divenumber).std_end = ...
+            nanstd(errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == ...
+            divenumber & errors.spatial(day-8).DICspt' > nanmax(errors.spatial(day-8).DICspt)-1));        
+        errors.spatial(day-8).DICspace(divenumber).std_begin = ...
+            nanstd(errors.spatial(day-8).DICsp(errors.dives(day-8).divesDIC == ...
+            divenumber & errors.spatial(day-8).DICspt' < nanmin(errors.spatial(day-8).O2spt)+1));  
+
+    end
+    
     %% inventory change errors (Oxygen)
     errors.invO2(day-8).stdO2space = nanstd([errors.spatial(day-8).O2space.mean]);
     errors.invO2(day-8).meanO2space = nanmean([errors.spatial(day-8).O2space.mean]);        
@@ -52,7 +185,6 @@ disp('NCP and errors (O2 & DIC) | Calculating ');
     
 end
 
-
 %% ASE errors
 
 %--------------------------------
@@ -70,7 +202,7 @@ errors.O2_ASE.O2_sat = o2satSTP(O2_ase.Temp, O2_ase.Salt, O2_ase.press*1013.25) 
     o2satSTP(O2_ase.Temp+[errors.invO2.stdTspace], O2_ase.Salt+[errors.invO2.stdSspace], O2_ase.press*1013.25);
 errors.O2_ASE.O2_sat = ([means_struct.sig0_surf]/1000) .* errors.O2_ASE.O2_sat; 
 for ts = 1:numel(O2_ase.ASE)
-    errors.O2_ASE.O2_sat_sim(ts,:) = pearsrnd(0,simulated_errors.O2_ASE.O2_sat(ts)*0.33,0,3,100000,1); % mmol m-3
+    errors.O2_ASE.O2_sat_sim(ts,:) = pearsrnd(0,errors.O2_ASE.O2_sat(ts)*0.33,0,3,100000,1); % mmol m-3
 end
 % ASE calculation
 for ts = 1:numel(O2_ase.ASE)
