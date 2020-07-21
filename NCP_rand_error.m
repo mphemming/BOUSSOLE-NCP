@@ -176,7 +176,7 @@ for day = options.dayrange
     errors.invDIC(day-8).stdDICspace_begin = nanstd([errors.spatial(day-8).DICspace.mean_begin]);
     errors.invDIC(day-8).stdDICspace_end = nanstd([errors.spatial(day-8).DICspace.mean_end]);       
 
-    if day >=1 & day <=34;    
+    if day >=1 & day <=34  
     errors.invDIC(day-8).mean_inv_t1zmix2 = nanmean([errors.spatial(day-8).DICspace.inv_zmix2]);     
     errors.invDIC(day-8).std_inv_t1zmix2 = nanstd([errors.spatial(day-8).DICspace.inv_zmix2]);    
     errors.invDIC(day-8).mean_inv_t1zmix2_diff = nanmean([errors.spatial(day-8).DICspace.inv_zmix2_diff]);     
@@ -193,8 +193,8 @@ end
 
 errors.O2_ASE.calibration = 3.3; % mmol m-3
 errors.O2_ASE.gas = 20; % 20%
-simulated_errors.O2_ASE.calibration = pearsrnd(0,3.3*0.33,0,3,100000,1); % mmol m-3
-simulated_errors.O2_ASE.gas = (pearsrnd(0,20*0.33,0,3,100000,1) / 100) + 1; % percent
+simulated_errors.O2_ASE.calibration = pearsrnd(0,3.3,0,3,100000,1); % mmol m-3
+simulated_errors.O2_ASE.gas = (pearsrnd(0,20,0,3,100000,1) / 100) + 1; % percent
 simulated_errors.O2_ASE.O2_surf = [means_struct.O2_surf];
 % simulated_errors.O2_ASE.calibration = random_range(0, 3.3,3000);% mmol m-3
 % simulated_errors.O2_ASE.gas = random_range(0, 0.2,3000)+1;% percent
@@ -202,7 +202,7 @@ errors.O2_ASE.O2_sat = o2satSTP(O2_ase.Temp, O2_ase.Salt, O2_ase.press*1013.25) 
     o2satSTP(O2_ase.Temp+[errors.invO2.stdTspace], O2_ase.Salt+[errors.invO2.stdSspace], O2_ase.press*1013.25);
 errors.O2_ASE.O2_sat = ([means_struct.sig0_surf]/1000) .* errors.O2_ASE.O2_sat; 
 for ts = 1:numel(O2_ase.ASE)
-    errors.O2_ASE.O2_sat_sim(ts,:) = pearsrnd(0,errors.O2_ASE.O2_sat(ts)*0.33,0,3,100000,1); % mmol m-3
+    errors.O2_ASE.O2_sat_sim(ts,:) = pearsrnd(0,errors.O2_ASE.O2_sat(ts),0,3,100000,1); % mmol m-3
 end
 % ASE calculation
 for ts = 1:numel(O2_ase.ASE)
@@ -215,21 +215,94 @@ end
 
 %% Advection errors
 
-for ts = 1:numel([O2_adv.adv])
-    errors.O2_ADV.ADV_std(ts,:) = pearsrnd(0,O2_adv(ts).adv_std,0,3,100000,1); % mmol m-3
-    simulated_errors.O2_ADV.ADV_std(ts,:) = errors.O2_ADV.ADV_std(ts,:) + O2_adv(ts).adv;
+for day = options.dayrange-8
+    
+    % create DACs simulation
+    simulated_errors.ADV(day).DACu = pearsrnd(0,means_struct(day).DACu_std_h,0,3,100000,1);
+    simulated_errors.ADV(day).DACv = pearsrnd(0,means_struct(day).DACv_std_h,0,3,100000,1);   
+    % create DU and DV anom, plus O2 plane errors
+    for n_layer = 1:numel(O2_adv(day).oxy_x_errors)
+        %
+        DU_anom(day).vals(n_layer).vals = pearsrnd(0,abs(O2_adv(day).DU_anom_errors(n_layer))*0.341,0,3,100000,1);
+        DV_anom(day).vals(n_layer).vals = pearsrnd(0,abs(O2_adv(day).DV_anom_errors(n_layer))*0.341,0,3,100000,1);
+        %        
+        simulated_errors.ADV(day).DU_abs_errors(n_layer,:) = DU_anom(day).vals(n_layer).vals + simulated_errors.ADV(day).DACu;
+        simulated_errors.ADV(day).DV_abs_errors(n_layer,:) = squeeze([DV_anom(day).vals(n_layer).vals]) + simulated_errors.ADV(day).DACv;
+        %
+        simulated_errors.ADV(day).oxy_x(day,n_layer,:) = pearsrnd(0,abs(O2_adv(day).oxy_x_errors(n_layer))*0.341,0,3,100000,1);
+        simulated_errors.ADV(day).oxy_y(day,n_layer,:) = pearsrnd(0,abs(O2_adv(day).oxy_y_errors(n_layer))*0.341,0,3,100000,1);        
+    end
+    
+    % calculate ADV errors
+    for n_layer = 1:numel(O2_adv(day).oxy_x_errors)    
+        simulated_errors.ADV(day).ADV(n_layer,:) = ( squeeze(O2_adv(day).oxy_x(n_layer) + simulated_errors.ADV(day).oxy_x(day,n_layer,:)) .* ...
+                                                    (O2_adv(day).U(n_layer) + simulated_errors.ADV(day).DU_abs_errors(n_layer,:))' ) + ...
+                                                    ( squeeze(O2_adv(day).oxy_y(n_layer) + simulated_errors.ADV(day).oxy_y(day,n_layer,:)) .* ...
+                                                        (O2_adv(day).V(n_layer) + simulated_errors.ADV(day).DV_abs_errors(n_layer,:))' ); % mmol m^-3 s^-1 
+        simulated_errors.ADV(day).ADV_estimate = nanmean(simulated_errors.ADV(day).ADV,1)' * 86400 * options.h;
+    end
+    
+%     simulated_errors.ADV(day).ADV_estimate_final = ...
+%         nanmean(simulated_errors.ADV(day).ADV_estimate(simulated_errors.ADV(day).ADV_estimate ~= 0))* 86400 * options.h;
 end
+
+% old method
+% for ts = 1:numel([O2_adv.adv])
+%     errors.O2_ADV.ADV_std(ts,:) = pearsrnd(0,O2_adv(ts).adv_std,0,3,100000,1); % mmol m-3
+%     simulated_errors.O2_ADV.ADV_std(ts,:) = errors.O2_ADV.ADV_std(ts,:) + O2_adv(ts).adv;
+% end
 
 %% Inventory change
 
-for day = 10:34
-errors.invO2(day-9).errors = sqrt( (errors.invO2(2).stdO2space_begin)^2 + (errors.invO2(25).stdO2space_end)^2)*options.h;
-errors.invDIC(day-9).errors = sqrt( (errors.invDIC(2).stdDICspace_begin)^2 + (errors.invDIC(25).stdDICspace_end)^2)*options.h;
+% for day = 10:34
+% errors.invO2(day-9).errors = sqrt( (errors.invO2(2).stdO2space_begin)^2 + (errors.invO2(25).stdO2space_end)^2)*options.h;
+% errors.invDIC(day-9).errors = sqrt( (errors.invDIC(2).stdDICspace_begin)^2 + (errors.invDIC(25).stdDICspace_end)^2)*options.h;
+% end
+% 
+% for ts = 1:numel([O2_adv.adv])
+%     errors.O2_inv.inv(ts,:) = pearsrnd(0,errors.invO2(1).errors,0,3,100000,1); % mmol m-3
+%     simulated_errors.O2_inv.inv(ts,:) = errors.O2_inv.inv(ts,:) + O2_inv.inv(ts);
+% end
+
+for day = options.dayrange-8
+    errors.invO2(day).O2_std = means_struct(day).O2_std_h;
+    simulated_errors.O2_inv.std(day,:) = pearsrnd(0,errors.invO2(day).O2_std,0,3,100000,1);
+    % calculate errors
+    for ts = 1:100000
+        simulated_errors.O2_inv.inv_integral(ts,day) = means_struct(day).O2_h+simulated_errors.O2_inv.std(day,ts).*options.h;
+    end
+end
+for ts = 1:100000
+    simulated_errors.O2_inv.differentials(ts,:) = diff(simulated_errors.O2_inv.inv_integral(ts,:));
+    simulated_errors.O2_inv.inv(ts,:) = interp1(O2_inv.diffrange, simulated_errors.O2_inv.differentials(ts,:), O2_inv.wantedrange,'linear','extrap');
 end
 
-for ts = 1:numel([O2_adv.adv])
-    errors.O2_inv.inv(ts,:) = pearsrnd(0,errors.invO2(1).errors,0,3,100000,1); % mmol m-3
-    simulated_errors.O2_inv.inv(ts,:) = errors.O2_inv.inv(ts,:) + O2_inv.inv(ts);
+
+%% entrainment
+
+errors.ENT.MLD_std = [means_struct.MLD_std_h]
+errors.ENT.MLD_std = [means_struct.MLD]
+
+for ts = 2:26
+    simulated_errors.ENT.MLD_error(ts,:) = pearsrnd(0,errors.ENT.MLD_std(ts),0,3,100000,1);
+end
+for ts = 2:26
+    simulated_errors.ENT.MLDt1(ts,:) = means_struct(ts).MLD_h + simulated_errors.ENT.MLD_error(ts,:);
+    simulated_errors.ENT.MLDt2(ts,:) = means_struct(ts+options.interval).MLD_h + simulated_errors.ENT.MLD_error(ts+1,:);
+    
+  if O2_ent(ts).MLDt2 > options.h
+       if O2_ent(ts).MLDt1 < O2_ent(ts).MLDt2
+           
+        simulated_errors.ENT.ent(ts,:) = ((O2_ent(day).O2invt1MLDt2 .* ...
+            (options.h ./ simulated_errors.ENT.MLDt2(ts,:))) ...
+            - O2_ent(ts).O2invht1) / 1; % mmol m^-2   
+
+       else
+       simulated_errors.ENT.ent(ts,:) = zeros(1,100000);           
+       end
+   else
+   simulated_errors.ENT.ent(ts,:) = zeros(1,100000);     
+   end    
 end
 
 
@@ -239,11 +312,12 @@ ENT = [0 , [O2_ent.ent], 0];
 
 for ts = 1:27
     % with inventory change
-    simulated_errors.O2_NCP(ts,:) = simulated_errors.O2_inv.inv(ts,:)  + simulated_errors.O2_ADV.ADV_std(ts,:) ...
-        + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);
+%     simulated_errors.O2_NCP(ts,:) = simulated_errors.O2_inv.inv(ts,:)  + simulated_errors.ADV(ts).ADV_estimate ...
+%         + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);
     % without inventory change
-%     simulated_errors.O2_NCP(ts,:) = O2_inv.inv(ts)  + simulated_errors.O2_ADV.ADV_std(ts,:) ...
-%         + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);    
+    simulated_errors.O2_NCP(ts,:) = simulated_errors.O2_inv.inv(:,ts)'  + simulated_errors.ADV(ts).ADV_estimate' ...
+        + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);    
+    % old method ADV: simulated_errors.O2_ADV.ADV_std(ts,:)
 end
 
 
