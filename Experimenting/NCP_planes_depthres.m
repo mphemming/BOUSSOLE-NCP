@@ -163,6 +163,7 @@ for n_bin = 1:numel(zgrid)
                 & planes_loop(day).oxygen_planes.xa >= xgrid(n_x) & planes_loop(day).oxygen_planes.xa < xgrid(n_x)+0.49 & ...
                 planes_loop(day).oxygen_planes.ya >= ygrid(n_y) & planes_loop(day).oxygen_planes.ya < ygrid(n_y)+0.49;
             planes_loop(day).oxygen_planes.gridded_O2_var(n_bin,n_x,n_y) = nanmedian(planes_loop(day).oxygen_planes.O2_adv(check_bin));
+            planes_loop(day).oxygen_planes.gridded_O2_var_std(n_bin,n_x,n_y) = nanstd(planes_loop(day).oxygen_planes.O2_adv(check_bin));
             planes_loop(day).oxygen_planes.gridded_xa(n_bin,n_x,n_y) = xgrid(n_x);
             planes_loop(day).oxygen_planes.gridded_ya(n_bin,n_x,n_y) = ygrid(n_y);    
             planes_loop(day).oxygen_planes.gridded_z(n_bin) =  zgrid(n_bin);
@@ -186,7 +187,13 @@ for n_bin = 1:numel(zgrid)
         % get important variables   
         planes_loop(day).oxygen_planes.gridded_m_lon(n_bin) = planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).vals.p10;
         planes_loop(day).oxygen_planes.gridded_m_lat(n_bin)  = planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).vals.p01;
-        planes_loop(day).oxygen_planes.gridded_m_0(n_bin)  = planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).vals.p00;        
+        planes_loop(day).oxygen_planes.gridded_m_0(n_bin)  = planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).vals.p00; 
+        % error estimation
+        planes_loop(day).oxygen_planes.gridded_confidence_boundaries(n_bin).vals = confint(planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).vals);   
+        planes_loop(day).oxygen_planes.gridded_m_lon_error(n_bin) = ...
+            abs(planes_loop(day).oxygen_planes.gridded_confidence_boundaries(n_bin).vals(3) - planes_loop(day).oxygen_planes.gridded_m_lon(n_bin))
+        planes_loop(day).oxygen_planes.gridded_m_lat_error(n_bin) = ...
+            abs(planes_loop(day).oxygen_planes.gridded_confidence_boundaries(n_bin).vals(5) - planes_loop(day).oxygen_planes.gridded_m_lat(n_bin))       
     end
 end
     
