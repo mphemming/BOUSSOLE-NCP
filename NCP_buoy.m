@@ -16,9 +16,9 @@
 % close all
 % clc
 
-options.directory = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts'
-options.data_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/data/'
-options.plot_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/Plots/'
+options.directory = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts'
+options.data_dir = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts\data\'
+options.plot_dir = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts\Plots\'
 addpath(genpath(options.directory));
 load([options.data_dir,'prcdata.mat'],'prcdata');
 load([options.data_dir,'METEO.mat']);  
