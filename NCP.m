@@ -15,17 +15,17 @@ clc
 
 %% Addpath and load in data
 
-options.directory = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts'
-options.data_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/data/'
-options.plot_dir = '/Volumes/Hemming_backup/UNSW_work/UEA/NCP_scripts/Plots/'
+options.directory = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts'
+options.data_dir = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts\data\'
+options.plot_dir = 'C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_scripts\Plots\'
 addpath(genpath(options.directory));
-load([options.directory,'/data/prcdata.mat'],'prcdata');
-load([options.directory,'/data/METEO.mat']);  
+load([options.directory,'\data\prcdata.mat'],'prcdata');
+load([options.directory,'\data\METEO.mat']);  
 
 %% define options for NCP calculation
 
 % top layer of interest 
-options.h = 100; % metres
+options.h = 46; % metres
 % moving window range 
 options.window = 2; % (e.g. +- number)
 % moving window range extender for advection planes
