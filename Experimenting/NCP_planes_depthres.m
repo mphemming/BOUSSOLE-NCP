@@ -291,11 +291,14 @@ end
 
     %% get time window means
     planes_loop(day).means.O2_h = nanmean(planes_loop(day).oxygen_planes.O2);  % mmol m^-3
+    planes_loop(day).means.O2_h_median = nanmedian(planes_loop(day).oxygen_planes.O2);  % mmol m^-3
     planes_loop(day).means.compensation_h = nanmean(vars.compensation(planes_loop(day).day_selection_h));
     planes_loop(day).means.O2_compensation_h = nanmean(vars.O2(...
         vars.t > (planes_loop(day).date_num-options.window) & ...
         vars.t < (planes_loop(day).date_num+options.window) & vars.P <= planes_loop(day).means.compensation_h));  % mmol m^-3   
     planes_loop(day).means.O2_std_h = nanstd(planes_loop(day).oxygen_planes.O2);  % mmol m^-3 
+    planes_loop(day).means.O2_standard_error = planes_loop(day).means.O2_std_h/sqrt(numel(planes_loop(day).oxygen_planes.O2));
+    planes_loop(day).means.O2_MAD_h = mad(planes_loop(day).oxygen_planes.O2,1);  % mmol m^-3     
     planes_loop(day).means.O2_surf = nanmean(vars.O2(planes_loop(day).day_selection_h & vars.depth < 10));  % mmol m^-3    
     planes_loop(day).means.O2_surf_std = nanstd(planes_loop(day).day_selection_h & vars.depth < 10);  % mmol m^-3     
     planes_loop(day).means.O2_inv_h = planes_loop(day).means.O2_h*options.h;  % mmol m^-2
