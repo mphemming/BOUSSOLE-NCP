@@ -265,11 +265,11 @@ end
 % end
 
 for day = options.dayrange-8
-    errors.invO2(day).O2_std = means_struct(day).O2_standard_error;
+    errors.invO2(day).O2_std = means_struct(day).dives_O2_h_standard_error;
     simulated_errors.O2_inv.std(day,:) = pearsrnd(0,errors.invO2(day).O2_std,0,3,100000,1);
     % calculate errors
     for ts = 1:100000
-        simulated_errors.O2_inv.inv_integral(ts,day) = +simulated_errors.O2_inv.std(day,ts).*options.h;
+        simulated_errors.O2_inv.inv_integral(ts,day) = simulated_errors.O2_inv.std(day,ts).*options.h;
     end
 end
 for ts = 1:100000
@@ -280,24 +280,31 @@ end
 
 %% entrainment
 
-errors.ENT.MLD_std = [means_struct.MLD_std_h]
+% errors.ENT.MLD_std = [means_struct.MLD_std_h]
+errors.ENT.MLD_std = [means_struct.MLD_standard_error_h];
 
 for ts = 2:27
-    simulated_errors.ENT.MLD_error(ts,:) = pearsrnd(0,errors.ENT.MLD_std(ts),0,3,100000,1);
+    simulated_errors.ENT.MLD_error(ts,:) = pearsrnd(0,0.5,0,3,100000,1);
 end
+
 for ts = 2:26
     simulated_errors.ENT.MLDt1(ts,:) = means_struct(ts).MLD_h + simulated_errors.ENT.MLD_error(ts,:);
     simulated_errors.ENT.MLDt2(ts,:) = means_struct(ts+options.interval).MLD_h + simulated_errors.ENT.MLD_error(ts+1,:);
-    simulated_errors.ENT.MLDt1(simulated_errors.ENT.MLDt1 < 0) = NaN;
-    simulated_errors.ENT.MLDt2(simulated_errors.ENT.MLDt2 < 0) = NaN;
-   
+    simulated_errors.ENT.O2invt1MLDt2(ts,:) = simulated_errors.ENT.MLDt2(ts,:).*simulated_errors.O2_inv.inv(:,ts)'+([means_struct(ts-1).O2_h]*46);
+    simulated_errors.ENT.O2invht1(ts,:) = simulated_errors.O2_inv.inv(:,ts);
+    
+    
   if O2_ent(ts).MLDt2 > options.h
        if O2_ent(ts).MLDt1 < O2_ent(ts).MLDt2
            
-        simulated_errors.ENT.ent(ts,:) = ((O2_ent(ts).O2invt1MLDt2 .* ...
-            (options.h ./ simulated_errors.ENT.MLDt2(ts,:))) ...
-            - O2_ent(ts).O2invht1) / 1; % mmol m^-2   
+%        s = simulated_errors.ENT.MLDt2(ts,:);
+%        s(s < 46) = NaN;
+%         change = (options.h ./ s);
+        change = (options.h / O2_ent(day).MLDt2);
 
+        simulated_errors.ENT.ent(ts,:) = ((O2_ent(day).O2invt1MLDt2 .* change) - simulated_errors.ENT.O2invht1(ts,:)) / 1; % mmol m^-2   
+        simulated_errors.ENT.ent(ts,:) = simulated_errors.ENT.ent(ts,:) - nanmean(simulated_errors.ENT.ent(ts,:));
+        
        else
        simulated_errors.ENT.ent(ts,:) = zeros(1,100000);           
        end
@@ -306,6 +313,8 @@ for ts = 2:26
    end    
 end
 
+simulated_errors.ENT.ent(1,:) = zeros(1,100000); 
+simulated_errors.ENT.ent(27,:) = zeros(1,100000); 
 
 %% Estimate NCP error
 
