@@ -41,6 +41,7 @@ disp(['Moving window = +- ',num2str(options.window),' days'])
 
 % Required parameters
 vars.dive = prcdata.timeseries.dive_vector;
+vars.downup = prcdata.timeseries.downup_vector;
 vars.P = prcdata.timeseries.P;
 vars.depth = prcdata.timeseries.depth;
 vars.S = prcdata.timeseries.S;
@@ -79,24 +80,6 @@ for n_dives = 1:numel(prcdata.hydrography)
 end
 vars.O2_sat = o2satSTP(vars.T, vars.S, 1013); % should use changing pressure!
 vars.O2_sat = (prcdata.timeseries.sigma0/1000) .* vars.O2_sat;
-% use O2 profiles with low gradient for advection
-for n_dives = 1:numel(prcdata.hydrography)
-    check_down =  vars.dive == n_dives & prcdata.timeseries.downup_vector == 1;
-    check_up =  vars.dive == n_dives & prcdata.timeseries.downup_vector == 2;
-    % down
-    if abs(grad_diff_down(n_dives)) < 17
-        vars.O2_adv(check_down) =  vars.O2(check_down);
-    else
-        vars.O2_adv(check_down) =  ones(size(vars.O2(check_down)))*NaN;
-    end
-    % up
-    if abs(grad_diff_down(n_dives)) < 17
-        vars.O2_adv(check_up) =  vars.O2(check_up);
-    else
-        vars.O2_adv(check_up) =  ones(size(vars.O2(check_up)))*NaN;
-    end    
-end
-vars.O2_adv = vars.O2; % this method not used
 %%%%%%%%%%%%%%%
 vars.compensation = NaN(size(vars.O2));
 vars.compensation(vars.O2-vars.O2_sat > -1 & vars.O2-vars.O2_sat < 1) = vars.depth(vars.O2-vars.O2_sat > -1 & vars.O2-vars.O2_sat < 1);
@@ -144,40 +127,44 @@ vars.GVsat_V =  [prcdata.GVsat.abs_V_daymean_Glider];
 
 clear l1 ans wind_selection check* dive 
 
+%% get profile means for layer from data
+
+[vars_profile_means] = get_profile_means(vars,options.h,numel(vars.O2));
+
 %% run individual mass balance modules / terms
 % calculate geopotential anomaly profiles
 run NCP_GPA.m
 % obtain plane-fits of geopotential anomalies and oxygen
-run NCP_planes_depthres.m
-run NCP_planes_depthres_DIC.m
+run NCP_planes_depthres_profiles.m
+% run NCP_planes_depthres_DIC.m
 % run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes.m
 % run /Users/Michael/Documents/Work/UEA/NCP_Scripts/NCP_planes_DIC.m
 % get oxygen inventory change with time
-run NCP_inventory.m
-run NCP_inventory_DIC.m
+run NCP_inventory_profiles.m
+% run NCP_inventory_DIC.m
 % calculate entrainment
-run NCP_entrainment.m
-run NCP_entrainment_DIC.m
+run NCP_entrainment_profiles.m
+% run NCP_entrainment_DIC.m
 % calculate advection term
 run NCP_advection_depthres.m
 % run NCP_advection.m
-run NCP_advection_depthres_DIC.m
+% run NCP_advection_depthres_DIC.m
 % calculate air-sea exchange
-run NCP_airseaexchange.m
-run NCP_airseaexchange_DIC.m
+run NCP_airseaexchange_profiles.m
+% run NCP_airseaexchange_DIC.m
 % get diapycnal diffusion
 run NCP_kz.m % exclude this, not required
 %% calculate NCP and associated errors
 % concatenate advection
-ADV = [O2_adv.adv]; ADV_DIC = [DIC_adv.adv];
+ADV = [O2_adv.adv]; %ADV_DIC = [DIC_adv.adv];
 NCP_est = O2_inv.inv(2:end-1)'  + ADV(2:end-1)  + O2_ase.ASE(2:end-1) - [O2_ent.ent];
-NCP_est_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
+% NCP_est_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
 NCP_est_kz = O2_inv.inv(2:end-1)'  + ADV(2:end-1)  + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
 NCP_est_kz_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent] - [kz(2:end-1).kz];
-NCP_est_kz_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
-NCP_est_kz_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
+% NCP_est_kz_DIC = DIC_inv.inv(2:end-1)'  + ADV_DIC(2:end-1)  + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
+% NCP_est_kz_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent] - [kz(2:end-1).kz_DIC];
 NCP_est_no_adv = O2_inv.inv(2:end-1)' + O2_ase.ASE(2:end-1) - [O2_ent.ent];
-NCP_est_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
+% NCP_est_no_adv_DIC = DIC_inv.inv(2:end-1)' + DIC_ase.FDIC(2:end-1) - [DIC_ent.ent];
 % get errors
 % run NCP_error.m 
 plot_days = options.dayrange(2:end-1);
