@@ -13,7 +13,7 @@
 
 disp('O2 Advection | Calculating absolute velocities');
 
-%% calculate geostrophic absolute velocitie
+%% calculate geostrophic absolute velocities
 
 for day = options.dayrange-8
     % Use only dives that go as far down as 1000m (ish)
