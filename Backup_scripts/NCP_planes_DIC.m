@@ -132,7 +132,7 @@ for day = options.dayrange
     planes_loop(day).DIC_planes.plane_standarderror = sqrt( nansum( ...
         (planes_loop(day).DIC_planes.DIC' - planes_loop(day).DIC_planes.DICfit(planes_loop(day).DIC_planes.plane_matrix(:,1:2))).^2 ) ...
         ./ length(planes_loop(day).DIC_planes.DIC) ) ; 
-    
+        
     %% Geopotential anomalies
      ii = 1;   
       for bn = planes_loop(day).GPA_planes.D_levels

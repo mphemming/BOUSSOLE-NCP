@@ -1,17 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Script to calculate the NCP erros using Pearson 
-% random number generation
+% Script to calculate the propogated errors in the
+% NCP calculation
 
-% created by MPH in Norwich, 04/07/2020
+% created by MPH in Norwich, 08.03.2018
+% modified by MPH in Sydney, 03/07/2019
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 disp('NCP and errors (O2 & DIC) | Calculating ');
 
-%% get errors for some variables
+%% resources
+
+% options.http://lectureonline.cl.msu.edu/~mmp/lvars.DACss/error/e2.options.htm 
+% options.https://poptions.hysics.appstate.edu/undergraduate-programs/lvars.DACsoratory/resources/error-propagation
 
 %% obtain standard deviations in space for time window
     
@@ -176,7 +180,7 @@ for day = options.dayrange
     errors.invDIC(day-8).stdDICspace_begin = nanstd([errors.spatial(day-8).DICspace.mean_begin]);
     errors.invDIC(day-8).stdDICspace_end = nanstd([errors.spatial(day-8).DICspace.mean_end]);       
 
-    if day >=1 & day <=34  
+    if day >=1 & day <=34;    
     errors.invDIC(day-8).mean_inv_t1zmix2 = nanmean([errors.spatial(day-8).DICspace.inv_zmix2]);     
     errors.invDIC(day-8).std_inv_t1zmix2 = nanstd([errors.spatial(day-8).DICspace.inv_zmix2]);    
     errors.invDIC(day-8).mean_inv_t1zmix2_diff = nanmean([errors.spatial(day-8).DICspace.inv_zmix2_diff]);     
@@ -185,155 +189,144 @@ for day = options.dayrange
     
 end
 
-%% ASE errors
+%% Inventory change (Oxygen & DIC)
 
-%--------------------------------
-% Oxygen
-%--------------------------------
+% error of selecting Z_eu depth
 
-errors.O2_ASE.calibration = 3.3; % mmol m-3
-errors.O2_ASE.gas = 20; % 20%
-simulated_errors.O2_ASE.calibration = pearsrnd(0,3.3,0,3,100000,1); % mmol m-3
-simulated_errors.O2_ASE.gas = (pearsrnd(0,20,0,3,100000,1) / 100) + 1; % percent
-simulated_errors.O2_ASE.O2_surf = [means_struct.O2_surf];
-% simulated_errors.O2_ASE.calibration = random_range(0, 3.3,3000);% mmol m-3
-% simulated_errors.O2_ASE.gas = random_range(0, 0.2,3000)+1;% percent
-errors.O2_ASE.O2_sat = o2satSTP(O2_ase.Temp, O2_ase.Salt, O2_ase.press*1013.25) - ...
-    o2satSTP(O2_ase.Temp+[errors.invO2.stdTspace], O2_ase.Salt+[errors.invO2.stdSspace], O2_ase.press*1013.25);
-errors.O2_ASE.O2_sat = ([means_struct.sig0_surf]/1000) .* errors.O2_ASE.O2_sat; 
-for ts = 1:numel(O2_ase.ASE)
-    errors.O2_ASE.O2_sat_sim(ts,:) = pearsrnd(0,errors.O2_ASE.O2_sat(ts),0,3,100000,1); % mmol m-3
-end
-% ASE calculation
-for ts = 1:numel(O2_ase.ASE)
-    for n = 1:100000
-        simulated_errors.O2_ASE.ASE_sim(ts,n) = ((O2_ase.KO2(ts))/100*24).*simulated_errors.O2_ASE.gas(n) ...
-            .*((simulated_errors.O2_ASE.O2_surf(ts)+simulated_errors.O2_ASE.calibration(n) - ...
-            (O2_ase.O2_saturation(ts)+simulated_errors.O2_ASE.calibration(n)+errors.O2_ASE.O2_sat_sim(ts,n) .* O2_ase.bub(ts)))) .*O2_ase.correction(ts) ;
-    end
+for day = 10:34
+errors.invO2(day-9).errors = sqrt( (errors.invO2(2).stdO2space_begin)^2 + (errors.invO2(25).stdO2space_end)^2)*options.h;
+errors.invDIC(day-9).errors = sqrt( (errors.invDIC(2).stdDICspace_begin)^2 + (errors.invDIC(25).stdDICspace_end)^2)*options.h;
 end
 
-%% Advection errors
-
-for day = options.dayrange-8
+%% Advection (Oxygen & DIC)
+for day = 1:numel(errors.ADV)
     
-    % create DACs simulation
-    simulated_errors.ADV(day).DACu = pearsrnd(0,means_struct(day).DACu_std_h,0,3,100000,1);
-    simulated_errors.ADV(day).DACv = pearsrnd(0,means_struct(day).DACv_std_h,0,3,100000,1);   
-    % create DU and DV anom, plus O2 plane errors
-    for n_layer = 1:numel(O2_adv(day).oxy_x_errors)
-        %
-        DU_anom(day).vals(n_layer).vals = pearsrnd(0,abs(O2_adv(day).DU_anom_errors(n_layer))*0.341,0,3,100000,1);
-        DV_anom(day).vals(n_layer).vals = pearsrnd(0,abs(O2_adv(day).DV_anom_errors(n_layer))*0.341,0,3,100000,1);
-        %        
-        simulated_errors.ADV(day).DU_abs_errors(n_layer,:) = DU_anom(day).vals(n_layer).vals + simulated_errors.ADV(day).DACu;
-        simulated_errors.ADV(day).DV_abs_errors(n_layer,:) = squeeze([DV_anom(day).vals(n_layer).vals]) + simulated_errors.ADV(day).DACv;
-        %
-        simulated_errors.ADV(day).oxy_x(day,n_layer,:) = pearsrnd(0,abs(O2_adv(day).oxy_x_errors(n_layer))*0.341,0,3,100000,1);
-        simulated_errors.ADV(day).oxy_y(day,n_layer,:) = pearsrnd(0,abs(O2_adv(day).oxy_y_errors(n_layer))*0.341,0,3,100000,1);        
-    end
-    
-    % calculate ADV errors
-    for n_layer = 1:numel(O2_adv(day).oxy_x_errors)    
-        simulated_errors.ADV(day).ADV(n_layer,:) = ( squeeze(O2_adv(day).oxy_x(n_layer) + simulated_errors.ADV(day).oxy_x(day,n_layer,:)) .* ...
-                                                    (O2_adv(day).U(n_layer) + simulated_errors.ADV(day).DU_abs_errors(n_layer,:))' ) + ...
-                                                    ( squeeze(O2_adv(day).oxy_y(n_layer) + simulated_errors.ADV(day).oxy_y(day,n_layer,:)) .* ...
-                                                        (O2_adv(day).V(n_layer) + simulated_errors.ADV(day).DV_abs_errors(n_layer,:))' ); % mmol m^-3 s^-1 
-        simulated_errors.ADV(day).ADV_estimate = nanmean(simulated_errors.ADV(day).ADV,1)' * 86400 * options.h;
-    end
-    
-%     simulated_errors.ADV(day).ADV_estimate_final = ...
-%         nanmean(simulated_errors.ADV(day).ADV_estimate(simulated_errors.ADV(day).ADV_estimate ~= 0))* 86400 * options.h;
+    errors.ADV(day).U_error = errors.ADV(day).stdDACu;
+    errors.ADV(day).V_error = errors.ADV(day).stdDACv;
+    % Oxygen
+    errors.ADV(day).E_adv = sqrt( (O2_adv(day).oxy_x .* errors.ADV(day).U_error).^2 + ...
+        (O2_adv(day).U .* O2_adv(day).oxy_x_error).^2 + ...
+        (O2_adv(day).V .* O2_adv(day).oxy_y_error).^2 + ...
+        (O2_adv(day).oxy_y .* errors.ADV(day).V_error).^2  );
+    errors.ADV(day).errors_adv = errors.ADV(day).E_adv .* 86400 .* options.h;
+    % DIC
+    errors.ADV_DIC(day).E_adv = sqrt( (DIC_adv(day).DIC_x .* errors.ADV(day).U_error).^2 + ...
+        (DIC_adv(day).U .* DIC_adv(day).DIC_x_error).^2 + ...
+        (DIC_adv(day).V .* DIC_adv(day).DIC_y_error).^2 + ...
+        (DIC_adv(day).DIC_y .* errors.ADV(day).V_error).^2  );
+    errors.ADV_DIC(day).errors_adv = errors.ADV_DIC(day).E_adv .* 86400 .* options.h;    
 end
 
-% old method
-% for ts = 1:numel([O2_adv.adv])
-%     errors.O2_ADV.ADV_std(ts,:) = pearsrnd(0,O2_adv(ts).adv_std,0,3,100000,1); % mmol m-3
-%     simulated_errors.O2_ADV.ADV_std(ts,:) = errors.O2_ADV.ADV_std(ts,:) + O2_adv(ts).adv;
-% end
+%% Air-sea exchange (Oxygen)
+% load bottle and CTD-glider O2 relationship data
+load('Bottle')
+load('CTDgli','CTDgli')
 
-%% Inventory change
+errors.ASE.KO2 = O2_ase.ASE_uncertainty.ASEAlkireKO2/100*24; % determined from 20% uncertainty of KO2 and using ASEflux function, mmol m^-2 d^-1
+errors.ASE.o2sat = o2satSTP(O2_ase.Temp, O2_ase.Salt, O2_ase.press*1013.25) - ...
+    o2satSTP(O2_ase.Temp+[errors.invO2.stdTspace], O2_ase.Salt+[errors.invO2.stdSspace], O2_ase.press*1013.25)
+errors.ASE.o2sat = ([means_struct.sig0_surf]/1000) .* errors.ASE.o2sat; 
+errors.ASE.bottlermse_march = 2.39; % µmol kg
+errors.ASE.bottlermse_April = 0.85; % µmol kg
+errors.ASE.Gliderrmse_march = 2.60; % µmol kg
+errors.ASE.Gliderrmse_April = 4.32; % µmol kg
+errors.ASE.bottle_march = abs(Bottle.O2_Mar_fit.p1 - 0.7858);
+errors.ASE.bottle_april = abs(Bottle.O2_Apr_fit.p1 - 0.7559);
+errors.ASE.Mar_bottSE = Bottle.O2_Mar_standarderror;
+errors.ASE.Apr_bottSE = Bottle.O2_Apr_standarderror;
+errors.ASE.Mar_GliSE = CTDgli.Mar_standarderror;
+errors.ASE.Apr_GliSE = CTDgli.Apr_standarderror;
+errors.ASE.KO2vals = O2_ase.ASE_uncertainty.ASEAlkireKO2val/100*24;
+errors.ASE.Schmidt = O2_ase.ASE_uncertainty.ASEAlkireSch;
+
+errors.ASE.error_c = sqrt( (errors.ASE.Mar_bottSE)^2 + (errors.ASE.Mar_GliSE)^2);
+errors.ASE.errors_ASE = sqrt(  (([means_struct.O2_surf] - O2_ase.O2_saturation) ...
+    .* errors.ASE.KO2).^2 + (errors.ASE.KO2vals .* errors.ASE.error_c).^2 + ...
+    (errors.ASE.KO2vals .* errors.ASE.o2sat).^2);
+
+%% Air-sea exchange (DIC)
+
+[~, ~,~,~,a1]=FCO2_updated([means_struct.fCO213_surf], DIC_ase.pCO2_atm,O2_ase.Temp,...
+    O2_ase.Salt,O2_ase.wind10,O2_ase.wind10sq); %  squared wind is used for oxygen, need to sqrt
+[~, ~,~,~,a2]=FCO2_updated([means_struct.fCO213_surf], DIC_ase.pCO2_atm,...
+    O2_ase.Temp+[errors.invDIC.stdTspace],O2_ase.Salt+[errors.invDIC.stdSspace],O2_ase.wind10,O2_ase.wind10sq); %  squared wind is used for oxygen, need to sqrt
+aerror = abs(a1-a2);
+
+errors.ASE_DIC.DIC_error = 9.2 *(1029/1000); % conversion µmol kg -> mmol m-3, using mean density
+errors.ASE_DIC.KO2_DIC_error = 0.2.*DIC_ase.K/100*24;
+errors.ASE_DIC.sat_DIC = DIC_ase.a; % solubility error
+errors.ASE_DIC.KO2_DIC = DIC_ase.K/100*24;
+errors.ASE_DIC.sat_DIC_error = aerror; 
+errors.ASE_DIC.fCO213error = 23.45; 
+errors.ASE_DIC.changeC = (errors.ASE_DIC.sat_DIC.*([means_struct.fCO213_surf] - DIC_ase.pCO2_atm));
+
+errors.ASE.errors_ASE_DIC = sqrt(  (errors.ASE_DIC.changeC .* errors.ASE_DIC.KO2_DIC_error).^2 + ...
+    (errors.ASE_DIC.changeC .* errors.ASE_DIC.sat_DIC_error).^2 + ...
+    (errors.ASE_DIC.KO2_DIC .* errors.ASE_DIC.sat_DIC.* errors.ASE_DIC.fCO213error).^2 + ...
+   (errors.ASE_DIC.KO2_DIC .* errors.ASE_DIC.sat_DIC .* 0).^2 ) ;
+
+%% Entrainment (Oxygen)
+
+errors.ent.Inv_zlim = options.h .* [errors.invO2.stdO2space];
+errors.ent.Inv_zmix2 =[errors.invO2.std_inv_t1zmix2];
+
+errors.ent.errors_ent = options.h * [errors.invO2(2:end-1).std_inv_t1zmix2_diff];
+errors.ent.errors_ent(isnan([errors.ent.errors_ent])) = 0.01;
+
+%% Entrainment (DIC)
+
+errors.ent_DIC.Inv_zlim = options.h .* [errors.invDIC.stdDICspace];
+errors.ent_DIC.Inv_zmix2 =[errors.invDIC.std_inv_t1zmix2];
+
+errors.ent_DIC.errors_ent = options.h * [errors.invDIC(2:end-1).std_inv_t1zmix2_diff];
+errors.ent_DIC.errors_ent(isnan([errors.ent_DIC.errors_ent])) = 0.01;
+
+
+%% kz 
 
 % for day = 10:34
-% errors.invO2(day-9).errors = sqrt( (errors.invO2(2).stdO2space_begin)^2 + (errors.invO2(25).stdO2space_end)^2)*options.h;
-% errors.invDIC(day-9).errors = sqrt( (errors.invDIC(2).stdDICspace_begin)^2 + (errors.invDIC(25).stdDICspace_end)^2)*options.h;
+% errors.kz(day-9).errors = sqrt( abs((kz(day-9).stdev2)^2 -  (kz(day-9).stdev1)^2));
 % end
+
+
+%% Overall error (Oxygen)
+
+E_inv = [errors.invO2.errors]; E_ADV = [errors.ADV.errors_adv]; 
+E_ase = [errors.ASE.errors_ASE]; E_ent = errors.ent.errors_ent;
+% E_kz =  [errors.kz.errors];
+errors.error_NCP =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+    (E_ADV(2:end-1)).^2 +  (E_ent).^2);
 % 
-% for ts = 1:numel([O2_adv.adv])
-%     errors.O2_inv.inv(ts,:) = pearsrnd(0,errors.invO2(1).errors,0,3,100000,1); % mmol m-3
-%     simulated_errors.O2_inv.inv(ts,:) = errors.O2_inv.inv(ts,:) + O2_inv.inv(ts);
-% end
+% errors.error_NCP_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%     (E_ADV(2:end-1)).^2 +  (E_ent).^2 + (E_kz).^2);
+% 
+% errors.error_NCP_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%      +  (E_ent).^2 + (E_kz).^2);
+ errors.error_NCP_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+     +  (E_ent).^2);
+ clear E_inv E_ADV E_ase Bottle CTDgli day divenumber ADV E_ent 
+ 
+%% Overall error (DIC)
 
-for day = options.dayrange-8
-    errors.invO2(day).O2_std = means_struct(day).dives_O2_h_standard_error;
-    simulated_errors.O2_inv.std(day,:) = pearsrnd(0,errors.invO2(day).O2_std,0,3,100000,1);
-    % calculate errors
-    for ts = 1:100000
-        simulated_errors.O2_inv.inv_integral(ts,day) = simulated_errors.O2_inv.std(day,ts).*options.h;
-    end
-end
-for ts = 1:100000
-    simulated_errors.O2_inv.differentials(ts,:) = diff(simulated_errors.O2_inv.inv_integral(ts,:));
-    simulated_errors.O2_inv.inv(ts,:) = interp1(O2_inv.diffrange, simulated_errors.O2_inv.differentials(ts,:), O2_inv.wantedrange,'linear','extrap');
-end
+E_inv = [errors.invDIC.errors]; E_ADV = [errors.ADV_DIC.errors_adv]; 
+E_ase = [errors.ASE.errors_ASE_DIC]; E_ent = errors.ent_DIC.errors_ent;
+% E_kz =  [errors.kz.errors];
+errors.error_NCP_DIC =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+    (E_ADV(2:end-1)).^2 +  (E_ent).^2);
+% 
+% errors.error_NCP_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%     (E_ADV(2:end-1)).^2 +  (E_ent).^2 + (E_kz).^2);
+% 
+% errors.error_NCP_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%      +  (E_ent).^2 + (E_kz).^2);
+ errors.error_NCP_no_adv_DIC =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+     +  (E_ent).^2);
+  
+ 
 
+clear E_inv E_ADV E_ase Bottle CTDgli day divenumber ADV E_ent 
 
-%% entrainment
-
-% errors.ENT.MLD_std = [means_struct.MLD_std_h]
-errors.ENT.MLD_std = [means_struct.MLD_standard_error_h];
-
-for ts = 2:27
-    simulated_errors.ENT.MLD_error(ts,:) = pearsrnd(0,0.5,0,3,100000,1);
-end
-
-for ts = 2:26
-    simulated_errors.ENT.MLDt1(ts,:) = means_struct(ts).MLD_h + simulated_errors.ENT.MLD_error(ts,:);
-    simulated_errors.ENT.MLDt2(ts,:) = means_struct(ts+options.interval).MLD_h + simulated_errors.ENT.MLD_error(ts+1,:);
-    simulated_errors.ENT.O2invt1MLDt2(ts,:) = simulated_errors.ENT.MLDt2(ts,:).*simulated_errors.O2_inv.inv(:,ts)'+([means_struct(ts-1).O2_h]*46);
-    simulated_errors.ENT.O2invht1(ts,:) = simulated_errors.O2_inv.inv(:,ts);
-    
-    
-  if O2_ent(ts).MLDt2 > options.h
-       if O2_ent(ts).MLDt1 < O2_ent(ts).MLDt2
-           
-%        s = simulated_errors.ENT.MLDt2(ts,:);
-%        s(s < 46) = NaN;
-%         change = (options.h ./ s);
-        change = (options.h / O2_ent(day).MLDt2);
-
-        simulated_errors.ENT.ent(ts,:) = ((O2_ent(day).O2invt1MLDt2 .* change) - simulated_errors.ENT.O2invht1(ts,:)) / 1; % mmol m^-2   
-        simulated_errors.ENT.ent(ts,:) = simulated_errors.ENT.ent(ts,:) - nanmean(simulated_errors.ENT.ent(ts,:));
-        
-       else
-       simulated_errors.ENT.ent(ts,:) = zeros(1,100000);           
-       end
-   else
-   simulated_errors.ENT.ent(ts,:) = zeros(1,100000);     
-   end    
-end
-
-simulated_errors.ENT.ent(1,:) = zeros(1,100000); 
-simulated_errors.ENT.ent(27,:) = zeros(1,100000); 
-
-%% Estimate NCP error
-
-ENT = [0 , [O2_ent.ent], 0];
-
-for ts = 1:27
-    % with inventory change
-%     simulated_errors.O2_NCP(ts,:) = simulated_errors.O2_inv.inv(ts,:)  + simulated_errors.ADV(ts).ADV_estimate ...
-%         + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);
-    % without inventory change
-    simulated_errors.O2_NCP(ts,:) = simulated_errors.O2_inv.inv(:,ts)' + simulated_errors.ADV(ts).ADV_estimate' ...
-        + simulated_errors.O2_ASE.ASE_sim(ts,:) - ENT(ts);    
-    % old method ADV: simulated_errors.O2_ADV.ADV_std(ts,:)
-end
-
-
-
-
-
-
+disp('NCP and errors (O2 & DIC) | finished ');
+disp('Script | finished :-) ');
 
 

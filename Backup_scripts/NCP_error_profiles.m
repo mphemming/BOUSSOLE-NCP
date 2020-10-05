@@ -5,7 +5,7 @@
 % NCP calculation
 
 % created by MPH in Norwich, 08.03.2018
-% modified by MPH in Sydney, 05/10/2019
+% modified by MPH in Sydney, 03/07/2019
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,65 +54,65 @@ for day = options.dayrange
     %% oxygen spatial standard deviation and standard error
     % mean for each profile within layer options.h
     
-%     errors.dives(day-8).divesO2 = profs.dive(errors.selection(day-8).tdayP); 
-%     errors.dives(day-8).divesO2unique = unique(errors.dives(day-8).divesO2);
-%     errors.dives(day-8).divesO2surf = profs.dive(errors.selection(day-8).tdayPsurf);     
-%     
-%     for divenumber = errors.dives(day-8).divesO2unique
-%         errors.spatial(day-8).O2sp = profs.O2((errors.selection(day-8).tdayP));     
-%         errors.spatial(day-8).O2splon = profs.lon((errors.selection(day-8).tdayP));
-%         errors.spatial(day-8).O2splat = profs.lat((errors.selection(day-8).tdayP));
-%         errors.spatial(day-8).O2sptemp = profs.T((errors.selection(day-8).tdayPsurf));        
-%         errors.spatial(day-8).O2spsal = profs.S((errors.selection(day-8).tdayPsurf)); 
-%         errors.spatial(day-8).O2spt = datevec(profs.t((errors.selection(day-8).tdayP)));
-%         errors.spatial(day-8).O2spt = errors.spatial(day-8).O2spt(:,3);
-%         errors.spatial(day-8).O2sptsurf = datevec(profs.t((errors.selection(day-8).tdayPsurf)));
-%         errors.spatial(day-8).O2sptsurf = errors.spatial(day-8).O2sptsurf(:,3);       
-%         errors.spatial(day-8).O2space(divenumber).mean = ...
-%             nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber));  
-%         
-%         if day >= 9 & day <= 34  
-%         errors.spatial(day-8).O2space(divenumber).inv_zmix2 = nanmean(...
-%             errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber)) .* ...
-%             means_struct(day-7).MLD_h; 
-%         errors.spatial(day-8).O2space(divenumber).inv_zmix2_diff =  (nanmean(...
-%             profs.O2(profs.dive == divenumber & profs.P > options.h & ...
-%             profs.P <  means_struct(day-7).MLD_h)));
-%         end
-%         
-%         errors.spatial(day-8).O2space(divenumber).lonmean = ...
-%             nanmean(errors.spatial(day-8).O2splon(errors.dives(day-8).divesO2 == divenumber)); 
-%         errors.spatial(day-8).O2space(divenumber).latmean = ...
-%             nanmean(errors.spatial(day-8).O2splat(errors.dives(day-8).divesO2 == divenumber)); 
-%         errors.spatial(day-8).O2space(divenumber).Tmean = ...
-%             nanmean(errors.spatial(day-8).O2sptemp(errors.dives(day-8).divesO2surf == divenumber));         
-%         errors.spatial(day-8).O2space(divenumber).Smean = ...
-%             nanmean(errors.spatial(day-8).O2spsal(errors.dives(day-8).divesO2surf == divenumber));  
-% 
-%         % only use values at edges of time window ( Toptions.his is wrong!?)
-%         
-%         errors.spatial(day-8).O2space(divenumber).mean_end = ...
-%             nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
-%         errors.spatial(day-8).O2space(divenumber).mean_begin = ...
-%             nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));            
-%         errors.spatial(day-8).O2space(divenumber).std_end = ...
-%             nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
-%         errors.spatial(day-8).O2space(divenumber).std_begin = ...
-%             nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));  
-%          errors.spatial(day-8).O2space(divenumber).std_error_end = ...
-%              errors.spatial(day-8).O2space(divenumber).std_end / ...
-%              sqrt(numel(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1)));
-%         errors.spatial(day-8).O2space(divenumber).std_error_begin = ...
-%             errors.spatial(day-8).O2space(divenumber).std_begin / ...
-%             sqrt(numel(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
-%             divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1)));
-% 
-%     end
+    errors.dives(day-8).divesO2 = profs.dive(errors.selection(day-8).tdayP); 
+    errors.dives(day-8).divesO2unique = unique(errors.dives(day-8).divesO2);
+    errors.dives(day-8).divesO2surf = profs.dive(errors.selection(day-8).tdayPsurf);     
+    
+    for divenumber = errors.dives(day-8).divesO2unique
+        errors.spatial(day-8).O2sp = profs.O2((errors.selection(day-8).tdayP));     
+        errors.spatial(day-8).O2splon = profs.lon((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).O2splat = profs.lat((errors.selection(day-8).tdayP));
+        errors.spatial(day-8).O2sptemp = profs.T((errors.selection(day-8).tdayPsurf));        
+        errors.spatial(day-8).O2spsal = profs.S((errors.selection(day-8).tdayPsurf)); 
+        errors.spatial(day-8).O2spt = datevec(profs.t((errors.selection(day-8).tdayP)));
+        errors.spatial(day-8).O2spt = errors.spatial(day-8).O2spt(:,3);
+        errors.spatial(day-8).O2sptsurf = datevec(profs.t((errors.selection(day-8).tdayPsurf)));
+        errors.spatial(day-8).O2sptsurf = errors.spatial(day-8).O2sptsurf(:,3);       
+        errors.spatial(day-8).O2space(divenumber).mean = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber));  
+        
+        if day >= 9 & day <= 34  
+        errors.spatial(day-8).O2space(divenumber).inv_zmix2 = nanmean(...
+            errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == divenumber)) .* ...
+            means_struct(day-7).MLD_h; 
+        errors.spatial(day-8).O2space(divenumber).inv_zmix2_diff =  (nanmean(...
+            profs.O2(profs.dive == divenumber & profs.P > options.h & ...
+            profs.P <  means_struct(day-7).MLD_h)));
+        end
+        
+        errors.spatial(day-8).O2space(divenumber).lonmean = ...
+            nanmean(errors.spatial(day-8).O2splon(errors.dives(day-8).divesO2 == divenumber)); 
+        errors.spatial(day-8).O2space(divenumber).latmean = ...
+            nanmean(errors.spatial(day-8).O2splat(errors.dives(day-8).divesO2 == divenumber)); 
+        errors.spatial(day-8).O2space(divenumber).Tmean = ...
+            nanmean(errors.spatial(day-8).O2sptemp(errors.dives(day-8).divesO2surf == divenumber));         
+        errors.spatial(day-8).O2space(divenumber).Smean = ...
+            nanmean(errors.spatial(day-8).O2spsal(errors.dives(day-8).divesO2surf == divenumber));  
+
+        % only use values at edges of time window ( Toptions.his is wrong!?)
+        
+        errors.spatial(day-8).O2space(divenumber).mean_end = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
+        errors.spatial(day-8).O2space(divenumber).mean_begin = ...
+            nanmean(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));            
+        errors.spatial(day-8).O2space(divenumber).std_end = ...
+            nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1));        
+        errors.spatial(day-8).O2space(divenumber).std_begin = ...
+            nanstd(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1));  
+         errors.spatial(day-8).O2space(divenumber).std_error_end = ...
+             errors.spatial(day-8).O2space(divenumber).std_end / ...
+             sqrt(numel(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' > nanmax(errors.spatial(day-8).O2spt)-1)));
+        errors.spatial(day-8).O2space(divenumber).std_error_begin = ...
+            errors.spatial(day-8).O2space(divenumber).std_begin / ...
+            sqrt(numel(errors.spatial(day-8).O2sp(errors.dives(day-8).divesO2 == ...
+            divenumber & errors.spatial(day-8).O2spt' < nanmin(errors.spatial(day-8).O2spt)+1)));
+
+    end
     
 %    %% DIC spatial standard deviation
 %     % mean for each profile within layer options.h
@@ -170,46 +170,46 @@ for day = options.dayrange
 %     end
     
     %% inventory change errors (Oxygen)
-%     errors.invO2(day-8).stdO2space = nanstd([errors.spatial(day-8).O2space.mean]);
-%     errors.invO2(day-8).std_error_O2space = errors.invO2(day-8).stdO2space / ...
-%         sqrt(numel([errors.spatial(day-8).O2space.mean]));
-%     errors.invO2(day-8).meanO2space = nanmean([errors.spatial(day-8).O2space.mean]);        
-%     errors.invO2(day-8).stdTspace = nanstd([errors.spatial(day-8).O2space.Tmean]);
-%     errors.invO2(day-8).std_error_Tspace = errors.invO2(day-8).stdTspace / ...
-%         sqrt(numel([errors.spatial(day-8).O2space.Tmean]));    
-%     errors.invO2(day-8).meanTspace = nanmean([errors.spatial(day-8).O2space.Tmean]);       
-%     errors.invO2(day-8).stdSspace = nanstd([errors.spatial(day-8).O2space.Smean]);
-%     errors.invO2(day-8).std_error_Sspace = errors.invO2(day-8).stdSspace / ...
-%         sqrt(numel([errors.spatial(day-8).O2space.Smean]));       
-%     errors.invO2(day-8).meanSspace = nanmean([errors.spatial(day-8).O2space.Smean]); 
-%     % Only using values at beginning and end of time window
-%     errors.invO2(day-8).stdO2space_begin = nanstd([errors.spatial(day-8).O2space.mean_begin]);
-%     errors.invO2(day-8).std_error_O2space_begin = errors.invO2(day-8).stdO2space_begin / ...
-%         sqrt(numel([errors.spatial(day-8).O2space.mean_begin]));
-%     errors.invO2(day-8).stdO2space_end = nanstd([errors.spatial(day-8).O2space.mean_end]);       
-%     errors.invO2(day-8).std_error_O2space_end = errors.invO2(day-8).stdO2space_end / ...
-%         sqrt(numel([errors.spatial(day-8).O2space.mean_end]));
-%     % bootstrapping
-%     d = [errors.spatial(day-8).O2space.mean_begin];
-%     d = d(isfinite(d));
-%     btstrp = bootstrp(100000,@(x)[mean(x)],d);
-%     errors.invO2(day-8).boot_std_error_begin = nanstd(btstrp);    
-%     d = [errors.spatial(day-8).O2space.mean_end];
-%     d = d(isfinite(d));
-%     btstrp = bootstrp(100000,@(x)[mean(x)],d);
-%     errors.invO2(day-8).boot_std_error_end = nanstd(btstrp);
-%     
-%     if day >=1 & day <=34   
-%         errors.invO2(day-8).mean_inv_t1zmix2 = nanmean([errors.spatial(day-8).O2space.inv_zmix2]);     
-%         errors.invO2(day-8).std_inv_t1zmix2 = nanstd([errors.spatial(day-8).O2space.inv_zmix2]);   
-%         errors.invO2(day-8).std_inv_t1zmix2_day = day;
-%         errors.invO2(day-8).std_error_inv_t1zmix2 = errors.invO2(day-8).std_inv_t1zmix2 / ...
-%             sqrt(numel([errors.spatial(day-8).O2space.inv_zmix2]));
-%         errors.invO2(day-8).mean_inv_t1zmix2_diff = nanmean([errors.spatial(day-8).O2space.inv_zmix2_diff]);     
-%         errors.invO2(day-8).std_inv_t1zmix2_diff = nanstd([errors.spatial(day-8).O2space.inv_zmix2_diff]);    
-%         errors.invO2(day-8).std_error_inv_t1zmix2_diff = errors.invO2(day-8).std_inv_t1zmix2_diff / ...
-%             sqrt(numel([errors.spatial(day-8).O2space.inv_zmix2_diff]));
-%     end
+    errors.invO2(day-8).stdO2space = nanstd([errors.spatial(day-8).O2space.mean]);
+    errors.invO2(day-8).std_error_O2space = errors.invO2(day-8).stdO2space / ...
+        sqrt(numel([errors.spatial(day-8).O2space.mean]));
+    errors.invO2(day-8).meanO2space = nanmean([errors.spatial(day-8).O2space.mean]);        
+    errors.invO2(day-8).stdTspace = nanstd([errors.spatial(day-8).O2space.Tmean]);
+    errors.invO2(day-8).std_error_Tspace = errors.invO2(day-8).stdTspace / ...
+        sqrt(numel([errors.spatial(day-8).O2space.Tmean]));    
+    errors.invO2(day-8).meanTspace = nanmean([errors.spatial(day-8).O2space.Tmean]);       
+    errors.invO2(day-8).stdSspace = nanstd([errors.spatial(day-8).O2space.Smean]);
+    errors.invO2(day-8).std_error_Sspace = errors.invO2(day-8).stdSspace / ...
+        sqrt(numel([errors.spatial(day-8).O2space.Smean]));       
+    errors.invO2(day-8).meanSspace = nanmean([errors.spatial(day-8).O2space.Smean]); 
+    % Only using values at beginning and end of time window
+    errors.invO2(day-8).stdO2space_begin = nanstd([errors.spatial(day-8).O2space.mean_begin]);
+    errors.invO2(day-8).std_error_O2space_begin = errors.invO2(day-8).stdO2space_begin / ...
+        sqrt(numel([errors.spatial(day-8).O2space.mean_begin]));
+    errors.invO2(day-8).stdO2space_end = nanstd([errors.spatial(day-8).O2space.mean_end]);       
+    errors.invO2(day-8).std_error_O2space_end = errors.invO2(day-8).stdO2space_end / ...
+        sqrt(numel([errors.spatial(day-8).O2space.mean_end]));
+    % bootstrapping
+    d = [errors.spatial(day-8).O2space.mean_begin];
+    d = d(isfinite(d));
+    btstrp = bootstrp(100000,@(x)[mean(x)],d);
+    errors.invO2(day-8).boot_std_error_begin = nanstd(btstrp);    
+    d = [errors.spatial(day-8).O2space.mean_end];
+    d = d(isfinite(d));
+    btstrp = bootstrp(100000,@(x)[mean(x)],d);
+    errors.invO2(day-8).boot_std_error_end = nanstd(btstrp);
+    
+    if day >=1 & day <=34   
+        errors.invO2(day-8).mean_inv_t1zmix2 = nanmean([errors.spatial(day-8).O2space.inv_zmix2]);     
+        errors.invO2(day-8).std_inv_t1zmix2 = nanstd([errors.spatial(day-8).O2space.inv_zmix2]);   
+        errors.invO2(day-8).std_inv_t1zmix2_day = day;
+        errors.invO2(day-8).std_error_inv_t1zmix2 = errors.invO2(day-8).std_inv_t1zmix2 / ...
+            sqrt(numel([errors.spatial(day-8).O2space.inv_zmix2]));
+        errors.invO2(day-8).mean_inv_t1zmix2_diff = nanmean([errors.spatial(day-8).O2space.inv_zmix2_diff]);     
+        errors.invO2(day-8).std_inv_t1zmix2_diff = nanstd([errors.spatial(day-8).O2space.inv_zmix2_diff]);    
+        errors.invO2(day-8).std_error_inv_t1zmix2_diff = errors.invO2(day-8).std_inv_t1zmix2_diff / ...
+            sqrt(numel([errors.spatial(day-8).O2space.inv_zmix2_diff]));
+    end
     
 %     %% inventory change errors (DIC)
 %     errors.invDIC(day-8).stdDICspace = nanstd([errors.spatial(day-8).DICspace.mean]);
@@ -238,11 +238,16 @@ for day = 1:27
     check = profs.t > planes_loop(day+8).date_num - options.window ...
         & profs.t < planes_loop(day+8).date_num + options.window & profs.P < options.h;  % only top options.h metres    
     inv_std_errors(day) = nanstd(profs.O2(check)) / numel(profs.O2(isfinite(profs.O2) & check));
-    inv_std_errors_DIC(day) = nanstd(profs.DIC(check)) / numel(profs.DIC(isfinite(profs.DIC) & check));    
+    
 end
 
 inv_std_errors = [means_struct.O2_standard_error_profs];
-inv_std_errors_DIC = [means_struct.DIC_standard_error_profs];
+
+% error of selecting Z_eu depth
+for day = 10:34
+errors.invO2(day-9).errors = sqrt( (errors.invO2(2).std_error_O2space_begin)^2 + (errors.invO2(25).std_error_O2space_end)^2)*options.h;
+%errors.invDIC(day-9).errors = sqrt( (errors.invDIC(2).stdDICspace_begin)^2 + (errors.invDIC(25).stdDICspace_end)^2)*options.h;
+end
 
 % same but using errors at edge of window
 for day = 2:26
@@ -261,10 +266,10 @@ for day = 2:26
     if day+2 > 26
         n_end = 26;
     end
+%     errors.invO2(day).errors_edge = sqrt( (errors.invO2(day).std_error_O2space_begin)^2 + ...
+%         (errors.invO2(day).std_error_O2space_end)^2)*options.h;
     errors.invO2(day-1).errors_edge = (sqrt( (inv_std_errors(n_begin))^2 + ...
         (inv_std_errors(n_end))^2)*options.h)/n_days;
-    errors.invDIC(day-1).errors_edge = (sqrt( (inv_std_errors_DIC(n_begin))^2 + ...
-        (inv_std_errors_DIC(n_end))^2)*options.h)/n_days;    
 end
 
 
@@ -282,14 +287,11 @@ for day = 1:numel(errors.ADV)
     errors.ADV(day).mean_oxy_err = nanmean(errors.ADV(day).E_adv);
     errors.ADV(day).errors_adv = nanmean(errors.ADV(day).E_adv) .* 86400 .* options.h;
     % DIC
-    errors.ADV_DIC(day).E_adv = sqrt( (DIC_adv(day).DIC_x .* errors.ADV(day).U_error).^2 + ...
-        (DIC_adv(day).U .* (DIC_adv(day).DIC_x_errors)).^2 + ...
-        (DIC_adv(day).V .* (DIC_adv(day).DIC_y_errors)).^2 + ...
-        (DIC_adv(day).DIC_y .* errors.ADV(day).V_error).^2  );
-    errors.ADV_DIC(day).mean_DIC = nanmean(DIC_adv(day).DIC_x_errors);
-    errors.ADV_DIC(day).mean_DIC_err = nanmean(errors.ADV_DIC(day).E_adv);
-    errors.ADV_DIC(day).errors_adv = nanmean(errors.ADV_DIC(day).E_adv) .* 86400 .* options.h;
-    
+%     errors.ADV_DIC(day).E_adv = sqrt( (DIC_adv(day).DIC_x .* errors.ADV(day).U_error).^2 + ...
+%         (DIC_adv(day).U .* DIC_adv(day).DIC_x_error).^2 + ...
+%         (DIC_adv(day).V .* DIC_adv(day).DIC_y_error).^2 + ...
+%         (DIC_adv(day).DIC_y .* errors.ADV(day).V_error).^2  );
+%     errors.ADV_DIC(day).errors_adv = errors.ADV_DIC(day).E_adv .* 86400 .* options.h;    
 end
 
 %% Air-sea exchange (Oxygen)
@@ -325,7 +327,7 @@ errors.ASE.errors_ASE = sqrt(  (([means_struct.O2_surf] - O2_ase.O2_saturation) 
 [~, ~,~,~,a1]=FCO2_updated([means_struct.fCO213_surf], DIC_ase.pCO2_atm,O2_ase.Temp,...
     O2_ase.Salt,O2_ase.wind10,O2_ase.wind10sq); %  squared wind is used for oxygen, need to sqrt
 [~, ~,~,~,a2]=FCO2_updated([means_struct.fCO213_surf], DIC_ase.pCO2_atm,...
-    O2_ase.Temp+[means_struct.T_surf_std_profs],O2_ase.Salt+[means_struct.S_surf_std_profs],O2_ase.wind10,O2_ase.wind10sq); %  squared wind is used for oxygen, need to sqrt
+    O2_ase.Temp+[errors.invDIC.stdTspace],O2_ase.Salt+[errors.invDIC.stdSspace],O2_ase.wind10,O2_ase.wind10sq); %  squared wind is used for oxygen, need to sqrt
 aerror = abs(a1-a2);
 
 errors.ASE_DIC.DIC_error = 9.2 *(1029/1000); % conversion µmol kg -> mmol m-3, using mean density
@@ -349,11 +351,11 @@ errors.ASE.errors_ASE_DIC = sqrt(  (errors.ASE_DIC.changeC .* errors.ASE_DIC.KO2
 % errors.ent.errors_ent = options.h * [errors.invO2(2:end-1).std_inv_t1zmix2_diff];
 % errors.ent.errors_ent(isnan([errors.ent.errors_ent])) = 0.01;
 
-%  errors.ent.Inv_zlim = options.h .* [errors.invO2.std_error_O2space];
-%  errors.ent.Inv_zmix2 =[errors.invO2.std_error_inv_t1zmix2];
-%  errors.ent.errors_ent = sqrt( (errors.ent.Inv_zlim(1:26)).^2 + (errors.ent.Inv_zmix2).^2);
-%  errors.ent.errors_ent =  errors.ent.errors_ent / 4;
-%  errors.ent.errors_ent(ENT <= 0) = 0;
+ errors.ent.Inv_zlim = options.h .* [errors.invO2.std_error_O2space];
+ errors.ent.Inv_zmix2 =[errors.invO2.std_error_inv_t1zmix2];
+ errors.ent.errors_ent = sqrt( (errors.ent.Inv_zlim(1:26)).^2 + (errors.ent.Inv_zmix2).^2);
+ errors.ent.errors_ent =  errors.ent.errors_ent / 4;
+ errors.ent.errors_ent(ENT <= 0) = 0;
 
 
 
@@ -366,33 +368,47 @@ errors.ASE.errors_ASE_DIC = sqrt(  (errors.ASE_DIC.changeC .* errors.ASE_DIC.KO2
 % errors.ent_DIC.errors_ent(isnan([errors.ent_DIC.errors_ent])) = 0.01;
 
 
+%% kz 
+
+% for day = 10:34
+% errors.kz(day-9).errors = sqrt( abs((kz(day-9).stdev2)^2 -  (kz(day-9).stdev1)^2));
+% end
+
+
 %% Overall error (Oxygen)
 
 E_inv = [ errors.invO2.errors_edge]; E_ADV = [errors.ADV.errors_adv]; 
-E_ase = [errors.ASE.errors_ASE];
-% E_ent = errors.ent.errors_ent;
-E_ent = zeros(size(1:25));
-
-errors.error_NCP_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
-    (E_ADV(2:end-1)).^2 +  (E_ent).^2 + kz_std(2:end-1).^2);
-errors.error_NCP_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
-    (E_ent).^2 + kz_std(2:end-1).^2);
-
-
+E_ase = [errors.ASE.errors_ASE]; E_ent = errors.ent.errors_ent;
+E_kz =  [kz.means.Kz_Jan_std]
+errors.error_NCP =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+    (E_ADV(2:end-1)).^2 +  (E_ent).^2);
+% 
+% errors.error_NCP_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%     (E_ADV(2:end-1)).^2 +  (E_ent).^2 + (E_kz).^2);
+% 
+% errors.error_NCP_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%      +  (E_ent).^2 + (E_kz).^2);
+errors.error_NCP =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+    (E_ADV(2:end-1)).^2 +  (E_ent).^2);
  clear E_inv E_ADV E_ase Bottle CTDgli day divenumber ADV E_ent 
  
 %% Overall error (DIC)
 
-E_inv = [errors.invDIC.errors_edge]; E_ADV = [errors.ADV_DIC.errors_adv]; 
-E_ase = [errors.ASE.errors_ASE_DIC]; 
-% E_ent = errors.ent_DIC.errors_ent;
-E_ent = zeros(size(1:25));
-
-errors.error_NCP_DIC_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
-    (E_ADV(2:end-1)).^2 +  (E_ent).^2 + kz_DIC_std(2:end-1).^2);
-errors.error_NCP_DIC_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
-    (E_ent).^2 + kz_DIC_std(2:end-1).^2);
+E_inv = [errors.invDIC.errors]; E_ADV = [errors.ADV_DIC.errors_adv]; 
+E_ase = [errors.ASE.errors_ASE_DIC]; E_ent = errors.ent_DIC.errors_ent;
+% E_kz =  [errors.kz.errors];
+errors.error_NCP_DIC =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+    (E_ADV(2:end-1)).^2 +  (E_ent).^2 + kz_std(2:end-1).^2);
+% 
+% errors.error_NCP_kz =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%     (E_ADV(2:end-1)).^2 +  (E_ent).^2 + (E_kz).^2);
+% 
+errors.error_NCP_kz_no_adv =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+     +  (E_ent).^2 + kz_std(2:end-1).^2);
+%  errors.error_NCP_no_adv_DIC =  sqrt( (E_inv).^2 + (E_ase(2:end-1)).^2 + ...
+%      +  (E_ent).^2  + kz_std(2:end-1).^2);
   
+ 
 
 clear E_inv E_ADV E_ase Bottle CTDgli day divenumber ADV E_ent 
 

@@ -26,7 +26,7 @@ NCP_22 = load([options.data_dir,'NCP_22m.mat']);
 %-----------------------------------------------------------------------------------------------------
 %% create figure
 
-figure('units','normalized','position',[.1 .1 .7 .8]);
+figure('units','normalized','position',[.1 .4 .7 1]);
 %-----------------------------------------------------------------------------------------------------
 % NCP with ADV
 subplot(2,2,1)
@@ -195,7 +195,7 @@ datetick('x','KeepLimits');
 add_zero
 
 % save figure
-% print(gcf,'-dpng','-r400',[options.plot_dir,'NCP_estimates.png']);
+print(gcf,'-dpng','-r400',[options.plot_dir,'NCP_estimates.png']);
 
 %% Plot PQ values
 
