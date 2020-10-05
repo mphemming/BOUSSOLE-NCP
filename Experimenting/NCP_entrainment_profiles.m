@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% NCP_entrainment.m
+% NCP_entrainment_profiles.m
 
 % Script to calculate entrainment 
 % Based on equation used by Umberto in his thesis
@@ -18,9 +18,9 @@ disp('Entrainment | Calculating effects of a changing MLD ');
 
 for day = (options.dayrange(2):options.interval:options.dayrange(end)-options.interval)-8 % because of MLD diffs different range
 
-    O2_ent(day).MLDt1 = means_struct(day).profiles_MLD_h_mean;
-    O2_ent(day).MLDt2 = means_struct(day+options.interval).profiles_MLD_h_mean;
-    O2_ent(day).O2invt1MLDt2 = means_struct(day).O2invt1MLDt2_profile;
+    O2_ent(day).MLDt1 = means_struct(day).MLD_h_profs;
+    O2_ent(day).MLDt2 = means_struct(day+options.interval).MLD_h_profs;
+    O2_ent(day).O2invt1MLDt2 = means_struct(day).O2invt1MLDt2_profs;
     O2_ent(day).O2invht1 =  O2_inv.inv_integral(day);
 
    if O2_ent(day).MLDt2 > options.h

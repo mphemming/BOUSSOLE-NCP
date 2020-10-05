@@ -91,4 +91,4 @@ plot(1:16,zeros(1,16),'k','LineStyle','--')
 clear a2 ans b1 b2 l l2 p5 pos y yneg ypos b4 b4a ADV
 
  
- print(gcf, '-dpng','-r400', [options.plot_dir,'NCP_DIC'])
+%  print(gcf, '-dpng','-r400', [options.plot_dir,'NCP_DIC'])

@@ -1,5 +1,10 @@
 function plot_rand_error(dates,term,error,title_string)
 
+%% ensure that first column is 100000 elements
+
+if size(error,1) == 100000
+    error = error';
+end
     
 %% create plot
 
@@ -12,8 +17,9 @@ for n = 1:numel(dates)
     err = term(n) + (error(n,:) - nanmean(error(n,:)));
     
     hold on
-    s = scatter(dates(n)*ones(size(err)),err,10,'k','filled')
+    s1 = scatter(dates(n)*ones(size(err)),err,10,'k','filled');
 end
+
 p1 = plot(dates,term,'g','LineWidth',2);
 p2 = plot(dates,upper,'r','LineStyle','--');
 plot(dates,lower,'r','LineStyle','--');
@@ -21,10 +27,10 @@ add_zero
 
 set(gca,'FontSize',16,'Box','On','XGrid','On')
 datetick('x','dd/mm','KeepLimits');
-ylabel('Error [mmol m^{-3}]');
+ylabel('Error [mmol m^{-2} d^{-1}]');
 title(title_string)
 
-leg = legend([s p2 p1],'Error range','Standard Deviation','Term')
+leg = legend([s1 p2 p1],'Error range','Standard Deviation','Term')
 set(leg,'Location','NorthWest','Box','Off');
 
 annotation(gcf,'textbox',[0.136 0.4 0.2 0.292727272727272], ...

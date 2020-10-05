@@ -12,48 +12,47 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% get binned profiles per dive
+%% get binned profiles per profile
 disp('Geopotential anomalies | binning data profiles');
-vertical_grid = 1:10:1000;
-for dive = 1:147
-    check_dive = vars.dive == dive;
+for n_prof = 1:294
+    check_prof = vars.profile_n == n_prof;
     % temp
-    [vars.bin(dive).T] = bin_variable_profile(vars.T(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);
+    [vars.bin(n_prof).T] = bin_variable_profile_NCP(vars.T(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);
     % psal
-    [vars.bin(dive).S] = bin_variable_profile(vars.S(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);
+    [vars.bin(n_prof).S] = bin_variable_profile_NCP(vars.S(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);
     % time
-    [vars.bin(dive).t] = bin_variable_profile(vars.t(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);  
+    [vars.bin(n_prof).t] = bin_variable_profile_NCP(vars.t(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);  
     % press
-    [vars.bin(dive).P] = bin_variable_profile(vars.P(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);
+    [vars.bin(n_prof).P] = bin_variable_profile_NCP(vars.P(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);
     % lon
-    [vars.bin(dive).lon] = bin_variable_profile(vars.lon(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);    
+    [vars.bin(n_prof).lon] = bin_variable_profile_NCP(vars.lon(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);    
     % lat
-    [vars.bin(dive).lat] = bin_variable_profile(vars.lat(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);    
+    [vars.bin(n_prof).lat] = bin_variable_profile_NCP(vars.lat(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);    
     % absS
-    [vars.bin(dive).absS] = bin_variable_profile(vars.absS(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);      
+    [vars.bin(n_prof).absS] = bin_variable_profile_NCP(vars.absS(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);      
     % consT
-    [vars.bin(dive).consT] = bin_variable_profile(vars.consT(check_dive),...
-        vars.depth(check_dive),vertical_grid,0);      
+    [vars.bin(n_prof).consT] = bin_variable_profile_NCP(vars.consT(check_prof),...
+        vars.depth(check_prof),options.vertical_grid,0);      
     % define bin depth
-    vars.bin(dive).depth = vars.bin(dive).consT.vertical;
+    vars.bin(n_prof).depth = vars.bin(n_prof).consT.vertical;
 end
 disp('Geopotential anomalies | data profiles binned');
 
 %%  Calculate geopotential anomalies
 disp('Geopotential anomalies | calculating GP anomalies');
-for dive = 1:147
-        vars.bin(dive).GPA = gsw_geo_strf_dyn_height(...
-            vars.bin(dive).absS.median_var,...
-            vars.bin(dive).consT.median_var,...
-            vars.bin(dive).P.median_var,0); % use abs S and consT, relative to surface
+for n_prof = 1:294
+        vars.bin(n_prof).GPA = gsw_geo_strf_dyn_height(...
+            vars.bin(n_prof).absS.median_var,...
+            vars.bin(n_prof).consT.median_var,...
+            vars.bin(n_prof).P.median_var,0); % use abs S and consT, relative to surface
 end
 disp('Geopotential anomalies | GP anomalies calculated');
 
-clear ans check_dive dive vertical_grid
+clearvars -except options prcdata vars vars_profile_means 
