@@ -32,7 +32,8 @@ vars.O2_sat = o2satSTP(vars.T, vars.S, 1013); % should use changing pressure!
 vars.O2_sat = (prcdata.timeseries.sigma0/1000) .* vars.O2_sat; % convert to mmol
 vars.Fl = prcdata.timeseries.Chl_Fl;
 vars.Sc700 = prcdata.timeseries.Scatter_700;
-vars.DIC = ([prcdata.CO2SYS.DIC]./vars.S) * 38.3; % normalised DIC for S
+% vars.DIC = ([prcdata.CO2SYS.DIC]./vars.S) * 38.3; % normalised DIC for S
+vars.DIC = prcdata.timeseries.DIC_recalibrated;
 vars.DIC = (prcdata.timeseries.sigma0/1000) .* vars.DIC; % convert µmol kg -> mmol m-3
 vars.fCO213 = ([prcdata.CO2SYS.fCO2]).*exp(0.0423*(13-vars.T)); % normalised FCO2 for T
 vars.fCO2 = [prcdata.CO2SYS.fCO2];
@@ -67,9 +68,47 @@ end
 vars.DACs.DACu(vars.DACs.DACu > 0.2) = NaN;
 vars.DACs.DACv(vars.DACs.DACv > 0.2 | vars.DACs.DACv < -0.2) = NaN;
 %% satellite measurements
-vars.GVsat_time =  [prcdata.GVsat.day];
-vars.GVsat_U =  [prcdata.GVsat.abs_U_daymean_Glider];
-vars.GVsat_V =  [prcdata.GVsat.abs_V_daymean_Glider];
+
+% vars.GVsat_time =  [prcdata.GVsat.day];
+% vars.GVsat_U =  [prcdata.GVsat.abs_U_daymean_Glider];
+% vars.GVsat_V =  [prcdata.GVsat.abs_V_daymean_Glider];
+
+% AVISO
+% obtain area average
+for n = 1:numel(prcdata.GVsat)
+    AVISO.time(n) = prcdata.GVsat(n).day;
+    % get domain average
+    U = prcdata.GVsat(n).abs_U';
+    V = prcdata.GVsat(n).abs_V';
+    f_lon = find(prcdata.GVsat(n).Lon >= 7.4 & prcdata.GVsat(n).Lon <= 8.2);
+    f_lat = find(prcdata.GVsat(n).Lat >= 43 & prcdata.GVsat(n).Lat <= 43.6);
+    AVISO.absU_ave(n) = nanmean(nanmean(U(f_lat,f_lon)));
+    AVISO.absV_ave(n) = nanmean(nanmean(V(f_lat,f_lon)));  
+    m_lon = find(prcdata.GVsat(n).Lon == 7.8125);
+    m_lat = find(prcdata.GVsat(n).Lat == 43.3125);    
+    AVISO.absU_middle(n) = U(m_lat,m_lon);
+    AVISO.absV_middle(n) = V(m_lat,m_lon);
+end
+
+% Look at JPL Oscar for comparison
+%https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplOscar.html      for attributes
+
+load('C:\Users\mphem\Documents\Work\UEA\UEA_work\NCP_Scripts\data\jplOscar.mat.mat');
+Oscar.time = (jplOscar.time/60/60/24) + datenum(1970,01,01);
+f_lon = find(jplOscar.longitude-360 >= 7.2 & jplOscar.longitude-360 <= 8.4);
+f_lat = find(jplOscar.latitude >= 43 & jplOscar.latitude <= 43.7);
+m_lon = find(jplOscar.longitude-360 >= 7.4 & jplOscar.longitude-360 <= 8.3);
+m_lat = find(jplOscar.latitude >= 43.3 & jplOscar.latitude <= 43.4);
+for n = 1:numel(Oscar.time)
+    u = squeeze(jplOscar.u(n,1,:,:));
+    v = squeeze(jplOscar.v(n,1,:,:));
+    % averages
+    Oscar.U_ave(n) = nanmean(nanmean(u(f_lat,f_lon)));
+    Oscar.V_ave(n) = nanmean(nanmean(v(f_lat,f_lon)));
+    % middle
+    Oscar.U_middle(n) = nanmean(nanmean(u(m_lat,m_lon)));
+    Oscar.V_middle(n) = nanmean(nanmean(v(m_lat,m_lon)));    
+end
 
 %% get MLD parameters
 MLD = prcdata.timeseries.MLDO2; % MLD from oxygen concentration
@@ -105,4 +144,4 @@ end
 [~, vars_profile_means] = get_profile_means(vars,options.h,numel(vars.O2));
 
 %% clear unimportant variables
-clearvars -except options prcdata vars vars_profile_means
+clearvars -except options prcdata vars vars_profile_means AVISO Oscar
