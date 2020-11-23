@@ -55,4 +55,4 @@ for n_prof = 1:294
 end
 disp('Geopotential anomalies | GP anomalies calculated');
 
-clearvars -except options prcdata vars vars_profile_means 
+clearvars -except options prcdata vars vars_profile_means Oscar AVISO
