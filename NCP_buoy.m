@@ -290,7 +290,7 @@ NCP_O2.M2901.check = check;
     
 %% clear uneccessary variables
 
-clearvars -except NCP* DIC* O2* errors planes_loop options buoy_error* NCP_O2 NCP_DIC vars means_struct
+clearvars -except NCP* DIC* O2* errors planes_loop options buoy_error* NCP_O2 NCP_DIC vars means_struct kz*
 
     
     
