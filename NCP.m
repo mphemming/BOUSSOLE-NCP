@@ -9,7 +9,7 @@
 % script modified by MPH in Sydney, 05/10/2020
 %
 
-clear all
+% clear all
 % close all
 clc
 
@@ -80,4 +80,4 @@ run NCP_table.m
 
 
 %% save NCP
-save([options.data_dir,'NCP_',num2str(options.h),'m.mat']);  
+save([options.data_dir,'NCP_',num2str(options.h),'m_',num2str(options.window),'_day_window_',num2str(options.window_adv*options.window),'_day_window_ADV.mat']);  

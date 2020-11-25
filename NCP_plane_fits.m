@@ -204,6 +204,11 @@ for n_bin = 1:numel(options.vertical_grid)
       % prepare for fit
       planes_loop(day).oxygen_planes.gridded_const = ones(size(O2(check_nans)));
       planes_loop(day).oxygen_planes.gridded_plane_matrix = [xa(check_nans), ya(check_nans), planes_loop(day).oxygen_planes.gridded_const];
+      [planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).fit,planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).gof,...
+          planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).out] = fit(planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1:2),O2(check_nans),'poly11');    
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).O2_for_fit = O2(check_nans);
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).xa_for_fit = planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1);
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).ya_for_fit = planes_loop(day).oxygen_planes.gridded_plane_matrix(:,2);
       % robust fit using bisquare method (less weighting to outliers)
       [planes_loop(day).oxygen_planes.gridded_O2fit_robust(n_bin).vals,stats] = robustfit(planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1:2),O2(check_nans),'bisquare');
       planes_loop(day).oxygen_planes.gridded_m_lon_error(n_bin) = stats.se(2);
@@ -274,6 +279,9 @@ end
             [planes_loop(day).GPA_planes.xa(bin_depth_check)', ...
             planes_loop(day).GPA_planes.ya(bin_depth_check)', ...
             planes_loop(day).GPA_planes.gpafit(ii).const'];
+        % standard fit
+        [planes_loop(day).GPA_planes.standard_fit(ii).fit,planes_loop(day).GPA_planes.standard_fit(ii).gof,...
+             planes_loop(day).GPA_planes.standard_fit(ii).out] = fit(planes_loop(day).GPA_planes.gpafit(ii).plane_matrix(:,1:2),planes_loop(day).GPA_planes.GPA(bin_depth_check)','poly11');     
         % robust fit using bisquare method (less weighting to outliers)
         [vals,stats] = robustfit(planes_loop(day).GPA_planes.gpafit(ii).plane_matrix(:,1:2),planes_loop(day).GPA_planes.GPA(bin_depth_check)','bisquare');
         planes_loop(day).GPA_planes.gpafit(ii).coefficients_from_matrix = vals;
@@ -418,10 +426,18 @@ end
     planes_loop(day).means.sig0_surf = nanmean(vars.sigma0(planes_loop(day).day_selection_h & vars.depth < 10));    
     planes_loop(day).means.wind = nanmean(vars.Wind(planes_loop(day).day_selection_h));
     planes_loop(day).means.wind_squared = nanmean(planes_loop(day).means.wind.^2);       
-    check_sat_time =  vars.GVsat_time >= datenum(2016,03,day-options.window,00,00,00) ...
-        &  vars.GVsat_time <= datenum(2016,03,day+options.window,00,00,00);
-    planes_loop(day).means.GVsat_U = nanmean(vars.GVsat_U(check_sat_time));
-    planes_loop(day).means.GVsat_V = nanmean(vars.GVsat_V(check_sat_time));    
+    % Satellite currents
+    % AVISO
+    check_sat_time =  AVISO.time >= datenum(2016,03,day-options.window*options.window_adv,00,00,00) ...
+        &  AVISO.time <= datenum(2016,03,day+options.window*options.window_adv,00,00,00);
+    planes_loop(day).means.GVsat_U = nanmean(AVISO.absU_middle(check_sat_time));
+    planes_loop(day).means.GVsat_V = nanmean(AVISO.absV_middle(check_sat_time));    
+    % Oscar
+    check_sat_time =  Oscar.time >= datenum(2016,03,day-options.window*options.window_adv,00,00,00) ...
+        &  Oscar.time <= datenum(2016,03,day+options.window*options.window_adv,00,00,00);    
+    planes_loop(day).means.GVsat_Oscar_U = nanmean(Oscar.U_middle(check_sat_time));
+    planes_loop(day).means.GVsat_Oscar_V = nanmean(Oscar.V_middle(check_sat_time));  
+    % sea level pressure
     planes_loop(day).means.sea_level_pressure = nanmean(vars.sea_level_press(planes_loop(day).day_selection_h))/100; % in mbar
     planes_loop(day).means.sea_level_pressure_atm = planes_loop(day).means.sea_level_pressure/1013.25; % in atm
     % profs
