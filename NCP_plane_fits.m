@@ -205,7 +205,10 @@ for n_bin = 1:numel(options.vertical_grid)
       planes_loop(day).oxygen_planes.gridded_const = ones(size(O2(check_nans)));
       planes_loop(day).oxygen_planes.gridded_plane_matrix = [xa(check_nans), ya(check_nans), planes_loop(day).oxygen_planes.gridded_const];
       [planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).fit,planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).gof,...
-          planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).out] = fit(planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1:2),O2(check_nans),'poly11');      
+          planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).out] = fit(planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1:2),O2(check_nans),'poly11');    
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).O2_for_fit = O2(check_nans);
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).xa_for_fit = planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1);
+      planes_loop(day).oxygen_planes.gridded_O2fit(n_bin).ya_for_fit = planes_loop(day).oxygen_planes.gridded_plane_matrix(:,2);
       % robust fit using bisquare method (less weighting to outliers)
       [planes_loop(day).oxygen_planes.gridded_O2fit_robust(n_bin).vals,stats] = robustfit(planes_loop(day).oxygen_planes.gridded_plane_matrix(:,1:2),O2(check_nans),'bisquare');
       planes_loop(day).oxygen_planes.gridded_m_lon_error(n_bin) = stats.se(2);
